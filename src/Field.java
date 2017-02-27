@@ -18,6 +18,7 @@ public class Field
       _occupants = new FieldOccupant[width][height];
    } // Field
 
+
    
    /**
     *  @return the width of the field.
