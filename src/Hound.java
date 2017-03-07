@@ -3,10 +3,10 @@ import java.awt.Color;
 /**
  * Hounds can display themsevles. They also get hungry
  */
-public class Hound extends FieldOccupant 
-{ 
+public class Hound extends FieldOccupant
+{
    /**
-    * Create a hound 
+    * Create a hound
     */
    public Hound()
    {
@@ -23,6 +23,7 @@ public class Hound extends FieldOccupant
       return _fedStatus == 0;
    }
 
+
    /**
     * Make this Hound hungrier
     *
@@ -35,6 +36,7 @@ public class Hound extends FieldOccupant
       return hasStarved();
    }
 
+
    public void eats()
    {
       // Reset the fed status of this Hound
@@ -45,8 +47,7 @@ public class Hound extends FieldOccupant
    /**
     * @return the color to use for a cell occupied by a Hound
     */
-   @Override
-   public Color getDisplayColor()
+   @Override public Color getDisplayColor()
    {
       return Color.red;
    } // getDisplayColor
@@ -55,21 +56,22 @@ public class Hound extends FieldOccupant
    /**
     * @return the text representing a Hound
     */
-   @Override
-   public String toString()
+   @Override public String toString()
    {
       return "H";
    }
 
+
    /**
     * Sets the starve time for this class
     *
-    * @param starveTime 
+    * @param starveTime
     */
    public static void setStarveTime(int starveTime)
    {
       _houndStarveTime = starveTime;
    }
+
 
    /**
     * @return the starve time for Hounds
@@ -82,7 +84,7 @@ public class Hound extends FieldOccupant
 
    // Default starve time for Hounds
    public static final int DEFAULT_STARVE_TIME = 3;
-   private static int _houndStarveTime = DEFAULT_STARVE_TIME; // Class variable for all hounds
+   private static      int _houndStarveTime    = DEFAULT_STARVE_TIME; // Class variable for all hounds
 
    // Instance attributes to keep track of how hungry we are
    private int _fedStatus;
