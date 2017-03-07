@@ -238,7 +238,6 @@ public class Simulation
       double probabilityFox = 0.5;                 // Default probability of fox 
       double probabilityHound = 0.15;              // Default probability of hound
       boolean graphicsMode = true;
-      Random randomGenerator = new Random();
       Field theField = null;
 
       // If we attach a GUI to this program, these objects will hold
@@ -306,29 +305,10 @@ public class Simulation
       // Set the starve time for hounds
       Hound.setStarveTime(starveTime);
 
-      // Visit each cell; randomly placing a Fox, Hound, or nothing in each.
-      for (int i = 0; i < theField.getWidth(); i++)
-      {
-         for (int j = 0; j < theField.getHeight(); j++)
-         {
-            // If a random number is greater than or equal to the probability
-            // of adding a fox, then place a fox
-            if (randomGenerator.nextGaussian() <= probabilityFox)
-            {
-               theField.setOccupantAt(i, j, new Fox());
-            }
-            // If a random number is less than or equal to the probability of
-            // adding a hound, then place a hound. Note that if a fox
-            // has already been placed, it remains and the hound is
-            // ignored.
-            if (randomGenerator.nextFloat() <= probabilityHound)
-            {
-               theField.setOccupantAt(i, j, new Hound());
-            }
-         } // for
-      } // for
+      // Initialize the starting field with elements
+      theField = setStartingField(theField, probabilityFox, probabilityHound);
 
-      // If we're in graphics mode, then create the frame, canvas,
+      // Check if graphics mode was set and if so create the frame, canvas,
       // and window. If not in graphics mode, these will remain null
       if (graphicsMode)
       {
@@ -346,9 +326,74 @@ public class Simulation
          graphicsContext = drawingCanvas.getGraphics();
       } // if
 
+      redrawField(theField, graphicsContext);
+
+   } // main
+
+
+   /*
+    * Add elements to the field to start. Each element is a new thread and is
+    * started. The thread will wait for the field to be drawn to start computing
+    *
+    * @param theField The field to add elements to
+    * @param probabilityFox The probability that a fox will be created
+    * @param probabilityHound The probability that a hound will be created
+    */
+   private static Field setStartingField(Field theField, double probabilityFox,
+         double probabilityHound)
+   {
+      // Initialize variables
+      Random randomGenerator = new Random();
+      FieldOccupant newOccupant;
+
+      // Visit each cell; randomly placing a Fox, Hound, or nothing in each.
+      for (int i = 0; i < theField.getWidth(); i++)
+      {
+         for (int j = 0; j < theField.getHeight(); j++)
+         {
+            // If a random number is less than or equal to the probability
+            // of adding a fox, then place a fox
+            if (randomGenerator.nextGaussian() <= probabilityFox)
+            {
+               newOccupant = new Fox();
+               newOccupant.start();
+               theField.setOccupantAt(i, j, newOccupant);
+            }
+            // If a random number is less than or equal to the probability of
+            // adding a hound, then place a hound.
+            else if (randomGenerator.nextFloat() <= probabilityHound)
+            {
+               newOccupant = new Fox();
+               newOccupant.start();
+               theField.setOccupantAt(i, j, newOccupant);
+            }
+            else
+            // There is not a hound or a fox so place an empty cell.
+            {
+               newOccupant = new EmptyCell();
+               newOccupant.start();
+               theField.setOccupantAt(i, j, newOccupant);
+            }
+         } // for
+      } // for
+
+      return theField;
+   }
+
+
+   /*
+    * Loop continuously redrawing the field each time the AtomicBoolean is set
+    *
+    * @param theField        the field to redraw
+    * @param graphicsContext the context for the graphics content if in graphic mode
+    */
+   private static void redrawField(Field theField, Graphics graphicsContext)
+         throws InterruptedException
+   {
       // Loop continuously checking the flag and redrawing the field
       while (true)
       {
+         // Check if the redraw boolean is set and set it to false
          if (Field._redrawField.getAndSet(false))
          {
             // Wait 10 milliseconds for the field to draw
@@ -358,6 +403,6 @@ public class Simulation
             drawField(graphicsContext, theField);
          }
       }
-   } // main
+   }
 
 } 

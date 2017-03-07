@@ -1,5 +1,4 @@
 import java.awt.Color;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Foxes can display themselves
@@ -21,5 +20,10 @@ public class Fox extends FieldOccupant
    @Override public String toString()
    {
       return "F";
+   }
+
+   public void run()
+   {
+
    }
 }

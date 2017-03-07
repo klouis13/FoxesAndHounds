@@ -83,6 +83,11 @@ public class Hound extends FieldOccupant
       return _houndStarveTime;
    }
 
+   public void run()
+   {
+
+   }
+
    // Default starve time for Hounds
    public static final int DEFAULT_STARVE_TIME = 3;
    private static      int _houndStarveTime    = DEFAULT_STARVE_TIME; // Class variable for all hounds
