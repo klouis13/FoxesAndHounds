@@ -235,8 +235,8 @@ public class Simulation
       int width = 50;                              // Default width
       int height = 25;                             // Default height
       int starveTime = Hound.DEFAULT_STARVE_TIME;  // Default starvation time
-      double probabilityFox = 0.5;                 // Default probability of fox 
-      double probabilityHound = 0.15;              // Default probability of hound
+      double probabilityFox = 0.5;                 // Default probability of fox
+      double probabilityHound = .15;              // Default probability of hound
       boolean graphicsMode = true;
       Field theField = null;
 
@@ -335,8 +335,8 @@ public class Simulation
     * Add elements to the field to start. Each element is a new thread and is
     * started. The thread will wait for the field to be drawn to start computing
     *
-    * @param theField The field to add elements to
-    * @param probabilityFox The probability that a fox will be created
+    * @param theField         The field to add elements to
+    * @param probabilityFox   The probability that a fox will be created
     * @param probabilityHound The probability that a hound will be created
     */
    private static Field setStartingField(Field theField, double probabilityFox,
@@ -351,18 +351,22 @@ public class Simulation
       {
          for (int j = 0; j < theField.getHeight(); j++)
          {
-            // If a random number is less than or equal to the probability
-            // of adding a fox, then place a fox
-            if (randomGenerator.nextGaussian() <= probabilityFox)
+            // If a random number is less than or equal to the probability of
+            // adding a hound, then place a hound.
+            if (randomGenerator.nextFloat() <= probabilityHound)
             {
-               newOccupant = new Fox();
+               System.out.println("Hound");
+
+               newOccupant = new Hound();
                newOccupant.start();
                theField.setOccupantAt(i, j, newOccupant);
             }
-            // If a random number is less than or equal to the probability of
-            // adding a hound, then place a hound.
-            else if (randomGenerator.nextFloat() <= probabilityHound)
+            // If a random number is less than or equal to the probability
+            // of adding a fox, then place a fox
+            else if (randomGenerator.nextGaussian() <= probabilityFox)
             {
+               System.out.println("Fox");
+
                newOccupant = new Fox();
                newOccupant.start();
                theField.setOccupantAt(i, j, newOccupant);
@@ -370,6 +374,8 @@ public class Simulation
             else
             // There is not a hound or a fox so place an empty cell.
             {
+               System.out.println("emptyCell");
+
                newOccupant = new EmptyCell();
                newOccupant.start();
                theField.setOccupantAt(i, j, newOccupant);
