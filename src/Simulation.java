@@ -1,5 +1,6 @@
 import java.awt.*;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * The Simulation class is a program that runs and animates a simulation of
@@ -8,7 +9,6 @@ import java.util.*;
 
 public class Simulation
 {
-
    // The constant CELL_SIZE determines the size of each cell on the 
    // screen during animation.  (You may change this if you wish.)
    private static final int    CELL_SIZE     = 20;
@@ -233,7 +233,7 @@ public class Simulation
        *  Default parameters.  (You may change these if you wish.)
        */
       int width = 50;                              // Default width
-      int height = 25;                            // Default height
+      int height = 25;                             // Default height
       int starveTime = Hound.DEFAULT_STARVE_TIME;  // Default starvation time
       double probabilityFox = 0.5;                 // Default probability of fox 
       double probabilityHound = 0.15;              // Default probability of hound
@@ -328,7 +328,7 @@ public class Simulation
          } // for
       } // for
 
-      // If we're in graphics mode, then create the frame, canvas, 
+      // If we're in graphics mode, then create the frame, canvas,
       // and window. If not in graphics mode, these will remain null
       if (graphicsMode)
       {
@@ -344,20 +344,20 @@ public class Simulation
                theField.getHeight() * CELL_SIZE);
          windowFrame.add(drawingCanvas);
          graphicsContext = drawingCanvas.getGraphics();
-      } // if 
+      } // if
 
-      // Loop infinitely, performing timesteps. We could optionally stop
-      // when the Field becomes empty or full, though there is no
-      // guarantee either of those will ever arise...
+      // Loop continuously checking the flag and redrawing the field
       while (true)
       {
-         Thread.sleep(
-               1000);                              // Wait one second (1000 milliseconds)
-         drawField(graphicsContext,
-               theField);            // Draw the current state
-         theField = performTimestep(theField);            // Simulate a timestep
-      }
+         if (Field._redrawField.getAndSet(false))
+         {
+            // Wait 10 milliseconds for the field to draw
+            Thread.sleep(10);
 
+            // Draw the field
+            drawField(graphicsContext, theField);
+         }
+      }
    } // main
 
 } 

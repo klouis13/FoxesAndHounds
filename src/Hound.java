@@ -1,10 +1,12 @@
 import java.awt.Color;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Hounds can display themsevles. They also get hungry
  */
 public class Hound extends FieldOccupant
 {
+
    /**
     * Create a hound
     */
@@ -80,7 +82,6 @@ public class Hound extends FieldOccupant
    {
       return _houndStarveTime;
    }
-
 
    // Default starve time for Hounds
    public static final int DEFAULT_STARVE_TIME = 3;

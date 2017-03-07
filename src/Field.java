@@ -1,78 +1,81 @@
 import java.util.Set;
 import java.util.HashSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- *  The Field class defines an object that models a field full of foxes and
- *  hounds. Descriptions of the methods you must implement appear below. 
+ * The Field class defines an object that models a field full of foxes and
+ * hounds. Descriptions of the methods you must implement appear below.
  */
-public class Field 
+public class Field
 {
+   // Redraw field flag, can be set in other classes.
+   public static AtomicBoolean _redrawField = new AtomicBoolean(true);
+
+
    /**
-    *  Creates an empty field of given width and height
+    * Creates an empty field of given width and height
     *
-    *  @param width of the field.
-    *  @param height of the field.
+    * @param width  of the field.
+    * @param height of the field.
     */
-   public Field(int width, int height) 
+   public Field(int width, int height)
    {
       _occupants = new FieldOccupant[width][height];
    } // Field
 
-   
+
    /**
-    *  @return the width of the field.
+    * @return the width of the field.
     */
-   public int getWidth() 
+   public int getWidth()
    {
-       return _occupants.length;
+      return _occupants.length;
    } // getWidth
 
 
    /**
-    *  @return the height of the field.
+    * @return the height of the field.
     */
-   public int getHeight() 
+   public int getHeight()
    {
-       return _occupants[0].length;
+      return _occupants[0].length;
    } // getHeight
 
 
    /**
-    *  Place an occupant in cell (x, y).
+    * Place an occupant in cell (x, y).
     *
-    *  @param x is the x-coordinate of the cell to place a mammal in.
-    *  @param y is the y-coordinate of the cell to place a mammal in.
-    *  @param toAdd is the occupant to place.
+    * @param x     is the x-coordinate of the cell to place a mammal in.
+    * @param y     is the y-coordinate of the cell to place a mammal in.
+    * @param toAdd is the occupant to place.
     */
-   public void setOccupantAt(int x, int y, FieldOccupant toAdd) 
+   public void setOccupantAt(int x, int y, FieldOccupant toAdd)
    {
-      _occupants[normalizeIndex(x, WIDTH_INDEX)]
-                [normalizeIndex(y, !WIDTH_INDEX)] = toAdd;
+      _occupants[normalizeIndex(x, WIDTH_INDEX)][normalizeIndex(y,
+            !WIDTH_INDEX)] = toAdd;
    } // setOccupantAt
 
 
    /**
-    *  @param x is the x-coordinate of the cell whose contents are queried.
-    *  @param y is the y-coordinate of the cell whose contents are queried.
-    *
-    *  @return occupant of the cell (or null if unoccupied)
+    * @param x is the x-coordinate of the cell whose contents are queried.
+    * @param y is the y-coordinate of the cell whose contents are queried.
+    * @return occupant of the cell (or null if unoccupied)
     */
-   public FieldOccupant getOccupantAt(int x, int y) 
+   public FieldOccupant getOccupantAt(int x, int y)
    {
-      return _occupants[normalizeIndex(x, WIDTH_INDEX)]
-                       [normalizeIndex(y, !WIDTH_INDEX)];
+      return _occupants[normalizeIndex(x, WIDTH_INDEX)][normalizeIndex(y,
+            !WIDTH_INDEX)];
    } // getOccupantAt
 
 
    /**
-    *  @param x is the x-coordinate of the cell whose contents are queried.
-    *  @param y is the y-coordinate of the cell whose contents are queried.
-    *
-    *  @return true if the cell is occupied
+    * @param x is the x-coordinate of the cell whose contents are queried.
+    * @param y is the y-coordinate of the cell whose contents are queried.
+    * @return true if the cell is occupied
     */
    public boolean isOccupied(int x, int y)
    {
-      return getOccupantAt(x,y) != null;
+      return getOccupantAt(x, y) != null;
    } // isOccupied
 
 
@@ -85,11 +88,9 @@ public class Field
       // For any cell there are 8 neighbors - left, right, above, below,
       // and the four diagonals. Define a collection of offset pairs that 
       // we'll step through to access each of the 8 neighbors
-      final int[][] indexOffsets = { {0,1}, {1,0}, {0,-1}, {-1, 0}, {1,1}, 
-                                     {1, -1}, {-1, 1}, {-1, -1}
-                                   };
+      final int[][] indexOffsets = { { 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 },
+            { 1, 1 }, { 1, -1 }, { -1, 1 }, { -1, -1 } };
       Set<FieldOccupant> neighbors = new HashSet<FieldOccupant>();
-
 
       // Iterate over the set of offsets, adding them to the x and y
       // indexes to check the neighboring cells
@@ -112,11 +113,10 @@ public class Field
     * Normalize an index (positive or negative) by translating it to a legal reference within
     * the bounds of the field
     *
-    * @param index to normalize
+    * @param index        to normalize
     * @param isWidthIndex is true when normalizing a width reference, false if
-    *                a height reference
-    *
-    * @return the normalized index value 
+    *                     a height reference
+    * @return the normalized index value
     */
    private int normalizeIndex(int index, boolean isWidthIndex)
    {
@@ -125,7 +125,7 @@ public class Field
       int bounds = isWidthIndex ? getWidth() : getHeight();
 
       // If x is non-negative use modulo arithmetic to wrap around
-      if (index >= 0) 
+      if (index >= 0)
       {
          return index % bounds;
       }
@@ -133,7 +133,7 @@ public class Field
       // then subtract from the width (i.e., we count from bounds down to
       // 0. If we get say, -12 on a field 10 wide, we convert -12 to
       // 12, mod with 10 to get 2 and then subract that from 10 to get 8)
-      else 
+      else
       {
          return bounds - (-index % bounds);
       }
@@ -141,8 +141,8 @@ public class Field
 
 
    /**
-    *  Define any variables associated with a Field object here.  These
-    *  variables MUST be private.
+    * Define any variables associated with a Field object here.  These
+    * variables MUST be private.
     */
    private FieldOccupant[][] _occupants;
 

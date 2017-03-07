@@ -1,4 +1,5 @@
 import java.awt.Color;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Foxes can display themselves
