@@ -7,6 +7,12 @@ import java.util.Set;
  */
 public class Fox extends FieldOccupant
 {
+
+   public Fox(int x, int y)
+   {
+      super(x, y);
+   }
+
    /**
     * @return the color to use for a cell occupied by a Fox
     */
@@ -27,6 +33,7 @@ public class Fox extends FieldOccupant
 
    public void run()
    {
+/*
       boolean dead = false;
       Set<FieldOccupant> neighbors = new HashSet<FieldOccupant>();
 
@@ -47,6 +54,6 @@ public class Fox extends FieldOccupant
          }
       }
 
-
+      */
    }
 }

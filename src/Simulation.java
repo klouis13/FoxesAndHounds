@@ -380,6 +380,15 @@ public class Simulation
                newOccupant.start();
                theField.setOccupantAt(i, j, newOccupant);
             }
+            else
+            // The spot has neither a fox or a hound, so put an empty spot there
+            {
+               System.out.println("Empty");
+
+               newOccupant = new EmptyCell();
+               // newOccupant.start();
+               theField.setOccupantAt(i, j, newOccupant);
+            }
          } // for
       } // for
 

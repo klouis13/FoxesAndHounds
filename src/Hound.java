@@ -1,5 +1,4 @@
 import java.awt.Color;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Hounds can display themsevles. They also get hungry
@@ -17,8 +16,9 @@ public class Hound extends FieldOccupant
    /**
     * Create a hound
     */
-   public Hound()
+   public Hound(int x, int y)
    {
+      super(x, y);
       _hungerLevel = _houndStarveTime;
    }
 
@@ -54,11 +54,12 @@ public class Hound extends FieldOccupant
 
    public void run()
    {
+      /*
       while (!Simulation.hasSimulationStarted())
       {
          // Wait for the simulation to start
       }
-      while (_hungerLevel != 0)
+      /*while (_hungerLevel != 0)
       {
 
          try
@@ -70,6 +71,7 @@ public class Hound extends FieldOccupant
 
          }
       }
+      */
    }
 
 }

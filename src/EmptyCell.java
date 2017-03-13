@@ -25,6 +25,6 @@ public class EmptyCell extends FieldOccupant
 
    public void run()
    {
-
+      // Do  nothing
    }
 }
