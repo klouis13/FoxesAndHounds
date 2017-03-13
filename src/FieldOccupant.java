@@ -6,16 +6,12 @@ import java.util.Random;
  */
 public abstract class FieldOccupant extends Thread
 {
-   protected Field.FieldCell _theCurrentCell;
+   //protected Field.FieldCell _theCurrentCell;
 
    // Declare Constants
    private final int MAX_SLEEP_TIME = 1250;
    private final int MIN_SLEEP_TIME = 750;
 
-   public FieldOccupant(Field.FieldCell theCell)
-   {
-      _theCurrentCell = theCell;
-   }
 
    /**
     * @return the color to use for a cell containing a particular kind

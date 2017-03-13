@@ -366,7 +366,7 @@ public class Simulation
             {
                System.out.println("Hound");
 
-               newOccupant = new Hound(theField.getFieldCell(i,j));
+               newOccupant = new Hound();
                newOccupant.start();
                theField.setOccupantAt(i, j, newOccupant);
             }
@@ -376,7 +376,7 @@ public class Simulation
             {
                System.out.println("Fox");
 
-               newOccupant = new Fox(theField.getFieldCell(i,j));
+               newOccupant = new Fox();
                newOccupant.start();
                theField.setOccupantAt(i, j, newOccupant);
             }

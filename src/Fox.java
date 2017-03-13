@@ -7,11 +7,6 @@ import java.util.Set;
  */
 public class Fox extends FieldOccupant
 {
-   public Fox(Field.FieldCell theCell)
-   {
-      super(theCell);
-   }
-
    /**
     * @return the color to use for a cell occupied by a Fox
     */

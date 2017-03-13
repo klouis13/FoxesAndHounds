@@ -17,9 +17,8 @@ public class Hound extends FieldOccupant
    /**
     * Create a hound
     */
-   public Hound(Field.FieldCell theCell)
+   public Hound()
    {
-      super(theCell);
       _hungerLevel = _houndStarveTime;
    }
 
