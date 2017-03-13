@@ -1,10 +1,17 @@
 import java.awt.Color;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Foxes can display themselves
  */
 public class Fox extends FieldOccupant
 {
+   public Fox(Field.FieldCell theCell)
+   {
+      super(theCell);
+   }
+
    /**
     * @return the color to use for a cell occupied by a Fox
     */
@@ -22,8 +29,29 @@ public class Fox extends FieldOccupant
       return "F";
    }
 
+
    public void run()
    {
+      boolean dead = false;
+      Set<FieldOccupant> neighbors = new HashSet<FieldOccupant>();
+
+      while (!Simulation.hasSimulationStarted())
+      {
+         // Wait for the simulation to start
+      }
+      while (!dead)
+      {
+
+         try
+         {
+            sleep();
+         }
+         catch(InterruptedException e)
+         {
+            dead = true;
+         }
+      }
+
 
    }
 }

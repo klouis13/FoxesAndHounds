@@ -1,6 +1,5 @@
 import java.awt.*;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * The Simulation class is a program that runs and animates a simulation of
@@ -9,10 +8,18 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Simulation
 {
+   private static boolean _simulationStarted = false;
+
    // The constant CELL_SIZE determines the size of each cell on the 
    // screen during animation.  (You may change this if you wish.)
    private static final int    CELL_SIZE     = 20;
    private static final String USAGE_MESSAGE = "Usage: java Simulation [--graphics] [--width int] [--height int] [--starvetime int] [--fox float] [--hound float]";
+
+
+   public static boolean hasSimulationStarted()
+   {
+      return _simulationStarted;
+   }
 
 
    /**
@@ -22,7 +29,7 @@ public class Simulation
     * @param currentState is the current state of the Field
     * @return new field state after one timestep
     */
-   private static Field performTimestep(Field currentState)
+  /* private static Field performTimestep(Field currentState)
    {
       // Define two constants that set bounds for minimum number
       // of hounds and foxes nearby before actions are taken
@@ -152,7 +159,7 @@ public class Simulation
 
       return nextState;
 
-   } // performTimestep
+   } // performTimestep*/
 
 
    /**
@@ -326,6 +333,8 @@ public class Simulation
          graphicsContext = drawingCanvas.getGraphics();
       } // if
 
+      _simulationStarted = true;
+
       redrawField(theField, graphicsContext);
 
    } // main
@@ -357,7 +366,7 @@ public class Simulation
             {
                System.out.println("Hound");
 
-               newOccupant = new Hound();
+               newOccupant = new Hound(theField.getFieldCell(i,j));
                newOccupant.start();
                theField.setOccupantAt(i, j, newOccupant);
             }
@@ -367,16 +376,7 @@ public class Simulation
             {
                System.out.println("Fox");
 
-               newOccupant = new Fox();
-               newOccupant.start();
-               theField.setOccupantAt(i, j, newOccupant);
-            }
-            else
-            // There is not a hound or a fox so place an empty cell.
-            {
-               System.out.println("emptyCell");
-
-               newOccupant = new EmptyCell();
+               newOccupant = new Fox(theField.getFieldCell(i,j));
                newOccupant.start();
                theField.setOccupantAt(i, j, newOccupant);
             }
@@ -402,8 +402,8 @@ public class Simulation
          // Check if the redraw boolean is set and set it to false
          if (Field._redrawField.getAndSet(false))
          {
-            // Wait 10 milliseconds for the field to draw
-            Thread.sleep(10);
+            // Wait 30 milliseconds for the field to draw
+            Thread.sleep(30);
 
             // Draw the field
             drawField(graphicsContext, theField);

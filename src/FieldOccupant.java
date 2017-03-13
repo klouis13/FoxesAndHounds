@@ -1,13 +1,21 @@
 import java.awt.Color;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.Random;
 
 /**
  * Abstract parent class for objects that can occupy a cell in the Field
  */
-public abstract class FieldOccupant extends Thread implements Runnable
+public abstract class FieldOccupant extends Thread
 {
-   ReentrantLock _lock = new ReentrantLock();
+   protected Field.FieldCell _theCurrentCell;
+
+   // Declare Constants
+   private final int MAX_SLEEP_TIME = 1250;
+   private final int MIN_SLEEP_TIME = 750;
+
+   public FieldOccupant(Field.FieldCell theCell)
+   {
+      _theCurrentCell = theCell;
+   }
 
    /**
     * @return the color to use for a cell containing a particular kind
@@ -15,5 +23,10 @@ public abstract class FieldOccupant extends Thread implements Runnable
     */
    abstract public Color getDisplayColor();
 
-   abstract public void run();
+
+   public void sleep() throws InterruptedException
+   {
+      Thread.sleep((long) Math.random() * (MAX_SLEEP_TIME - MIN_SLEEP_TIME)
+            + MIN_SLEEP_TIME);
+   }
 }

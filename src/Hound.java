@@ -6,43 +6,21 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class Hound extends FieldOccupant
 {
+   // Declare instance variables
+   private static int _houndStarveTime;
+   private int _hungerLevel;
+
+   // Default starve time for Hounds
+   public static final int DEFAULT_STARVE_TIME = 3;
+
 
    /**
     * Create a hound
     */
-   public Hound()
+   public Hound(Field.FieldCell theCell)
    {
-      // Start out well-fed
-      eats();
-   }
-
-
-   /**
-    * @return true if this Hound has starved to death
-    */
-   public boolean hasStarved()
-   {
-      return _fedStatus == 0;
-   }
-
-
-   /**
-    * Make this Hound hungrier
-    *
-    * @return true if the Hound has starved to death
-    */
-   public boolean getHungrier()
-   {
-      // Decrease the fed status of this Hound
-      _fedStatus--;
-      return hasStarved();
-   }
-
-
-   public void eats()
-   {
-      // Reset the fed status of this Hound
-      _fedStatus = _houndStarveTime;
+      super(theCell);
+      _hungerLevel = _houndStarveTime;
    }
 
 
@@ -75,24 +53,24 @@ public class Hound extends FieldOccupant
    }
 
 
-   /**
-    * @return the starve time for Hounds
-    */
-   public static int getStarveTime()
-   {
-      return _houndStarveTime;
-   }
-
    public void run()
    {
+      while (!Simulation.hasSimulationStarted())
+      {
+         // Wait for the simulation to start
+      }
+      while (_hungerLevel != 0)
+      {
 
+         try
+         {
+            sleep();
+         }
+         catch (InterruptedException e)
+         {
+
+         }
+      }
    }
-
-   // Default starve time for Hounds
-   public static final int DEFAULT_STARVE_TIME = 3;
-   private static      int _houndStarveTime    = DEFAULT_STARVE_TIME; // Class variable for all hounds
-
-   // Instance attributes to keep track of how hungry we are
-   private int _fedStatus;
 
 }
