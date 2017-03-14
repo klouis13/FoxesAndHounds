@@ -10,9 +10,9 @@ public class Empty extends FieldOccupant
     * @param x the x coordinate
     * @param y the y coordinate
     */
-   public Empty(int x, int y)
+   public Empty(int x, int y, boolean initLock)
    {
-      super(x,y, false);
+      super(x,y, initLock);
    }
 
    /**

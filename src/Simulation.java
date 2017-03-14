@@ -233,7 +233,7 @@ public class Simulation
             {
                //System.out.println("Empty");
 
-               newOccupant = new Empty(i, j);
+               newOccupant = new Empty(i, j, false);
             }
 
             theField.setOccupantAt(i, j, newOccupant);

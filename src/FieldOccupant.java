@@ -1,6 +1,7 @@
 import java.awt.Color;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+
 /**
  * Abstract parent class for objects that can occupy a cell in the Field
  */
@@ -8,13 +9,11 @@ public abstract class FieldOccupant
 {
    // Declare Instance variables
    protected AtomicBoolean _lock;
-   int _xCoordiante;
-   int _yCoordinate;
+   private int _xCoordiante;
+   private int _yCoordinate;
 
-   // Declare Constants
-   private final int MAX_SLEEP_TIME = 1250;
-   private final int MIN_SLEEP_TIME = 750;
-
+   // Initialize Constants
+   protected final int NUM_NEIGHBORS = 8;
 
    /**
     * Create a FieldOccupant with a given x and y coordiante
@@ -47,7 +46,7 @@ public abstract class FieldOccupant
     *
     * @return The lock or null if the lock is already taken.
     */
-   protected synchronized AtomicBoolean getAndLock()
+   protected AtomicBoolean getAndLock()
    {
       AtomicBoolean lock = null;
 
@@ -60,15 +59,42 @@ public abstract class FieldOccupant
    }
 
 
+   protected void interruptThread()
+   {
+      Thread.currentThread().interrupt();
+   }
+
    /**
     * Sleep for a random time between 750 and 1250 ms
     *
     * @throws InterruptedException
     */
-   protected void threadSleep() throws InterruptedException
+   protected int threadSleep() throws InterruptedException
    {
-      Thread.sleep((int)(Math.random() * (MAX_SLEEP_TIME - MIN_SLEEP_TIME)
-            + MIN_SLEEP_TIME));
+      // Declare Constants
+      final int MAX_SLEEP_TIME = 1250;
+      final int MIN_SLEEP_TIME = 750;
+
+      int sleepTime = (int) Math.random() * (MAX_SLEEP_TIME - MIN_SLEEP_TIME)
+            + MIN_SLEEP_TIME;
+
+      Thread.sleep(sleepTime);
+
+      return sleepTime;
+   }
+
+
+   /**
+    *
+    * @param x
+    * @param y
+    * @return
+    */
+   protected FieldOccupant[] getNeighborsArray()
+   {
+      // Get the neighbors
+      return Simulation._theField.getNeighborCells(getX(), getY())
+            .toArray(new FieldOccupant[NUM_NEIGHBORS]);
    }
 
 

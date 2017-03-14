@@ -40,55 +40,43 @@ public class Fox extends FieldOccupant implements Runnable
       AtomicBoolean neighborLock;
       AtomicBoolean secondFoxLock;
       int numHounds;
-      boolean birthedFox;
+      boolean completedAction;
       FieldOccupant newFox;
 
-      // Initialize Constants
-      final int NUM_NEIGHBORS = 8;
-
-         /*Set<FieldOccupant> neighbors;
-         Set<FieldOccupant> emptyCellNeighbors;
-         Iterator<FieldOccupant> emptyCellIterator;
-         Iterator<FieldOccupant> neighborIterator;
-         FieldOccupant nextNeighbor;
-         FieldOccupant nextEmptyCellNeighbor;
-
-         */
+      // Run while the fox has not been eaten
       while (!dead)
       {
          if (!Simulation.hasSimulationStarted())
          {
-            //System.out.println("Running...");
-            // Reset Variables
-            birthedFox = false;
+            completedAction = false;
 
             // Get the neighboring cells
-            neighbors = Simulation._theField
-                  .getNeighborCells(super.getX(), super.getY()).toArray(new FieldOccupant[NUM_NEIGHBORS]);
+            neighbors = getNeighborsArray();
 
             // Iterate of the neighbors
-            for (int i = 0; i < neighbors.length && !birthedFox; i++)
+            for (int i = 0; i < neighbors.length && !completedAction; i++)
             {
                // Check if the neighbor is an Empty Object
                if (neighbors[i] instanceof Empty)
                {
+
                   // Try to get and lock the empty cell object
                   neighborLock = neighbors[i].getAndLock();
 
                   // Check if the lock was aquired
                   if (neighborLock != null)
                   {
+
                      // Get the neighbors of the Empty Cell
-                     emptyCellsNeighbors = Simulation._theField
-                           .getNeighborCells(neighbors[i].getX(), neighbors[i].getY())
-                           .toArray(new FieldOccupant[NUM_NEIGHBORS]);
+                     emptyCellsNeighbors = neighbors[i].getNeighborsArray();
 
                      // Reset the numHounds counter
                      numHounds = -1;
 
                      // Iterate of the neighbors of the empty cell or if 2 hounds are found adjacent
                      for (int j = 0;
-                          j < emptyCellsNeighbors.length && numHounds <= 1 && !birthedFox; j++)
+                          j < emptyCellsNeighbors.length && numHounds <= 1
+                                && !completedAction; j++)
                      {
                         // Check the number of neighboring hounds the first time through
                         if (numHounds == -1)
@@ -101,37 +89,44 @@ public class Fox extends FieldOccupant implements Runnable
                         // Check for another fox
                         if (emptyCellsNeighbors[j] instanceof Fox)
                         {
-                           // Check if this is a different fox than the original
-                           if (this != emptyCellsNeighbors[j])
-                           {
-                              // Try to get the lock for this fox
-                              secondFoxLock = emptyCellsNeighbors[j].getAndLock();
+                           // Try to get the lock for this nextCell
+                           secondFoxLock = emptyCellsNeighbors[j].getAndLock();
 
-                              // Check that the lock for the second fox was aquired
-                              if (secondFoxLock != null)
+                           // Check that the lock for the second fox was aquired
+                           if (secondFoxLock != null)
+                           {
+                              // Check if this is a different fox than the original
+                              if (this != emptyCellsNeighbors[j])
                               {
-                                 System.out.println("newFox");
                                  // Create a new Fox Object with the lock on
-                                 newFox = new Fox(neighbors[i].getX(), neighbors[i].getY(), true);
+                                 newFox = new Fox(neighbors[i].getX(),
+                                       neighbors[i].getY(), true);
 
                                  // Start the fox thread
                                  new Thread((Fox) newFox).start();
 
                                  // Put a new fox in the empty cell and exit the for loop
-                                 Simulation._theField.setOccupantAt(neighbors[i].getX(),
-                                       neighbors[i].getY(), newFox);
+                                 Simulation._theField
+                                       .setOccupantAt(neighbors[i].getX(),
+                                             neighbors[i].getY(), newFox);
 
-                                 // Set the birthedFox boolean to exit the loop
-                                 birthedFox = true;
+                                 // Set the completedAction boolean to exit the loop
+                                 completedAction = true;
 
                                  // Release the new foxes lock to make it available
                                  newFox._lock.getAndSet(false);
 
-                                 // Release the lock of the second fox
-                                 secondFoxLock.getAndSet(false);
-
+                                 // Set the Boolean to redraw the field
                                  Field._redrawField.getAndSet(true);
                               }
+                              // Release the lock of the second fox
+                              secondFoxLock.getAndSet(false);
+                           }
+                           else
+                           // Failed to acquire a lock on the fox
+                           {
+                              // Set the completedAction to get out of the loops
+                              completedAction = true;
                            }
                         }
                      }
