@@ -12,14 +12,14 @@ public class Field
     * Define any variables associated with a Field object here.  These
     * variables MUST be private.
     */
-   private FieldCell[][] _occupants;
+   private FieldOccupant[][] _occupants;
 
    // Used in index normalizing method to distinguish between x and y
    // indices
    private final static boolean WIDTH_INDEX = true;
 
    // Redraw field flag, can be set in other classes.
-   public static AtomicBoolean _redrawField = new AtomicBoolean(true);
+   public static AtomicBoolean _redrawField;
 
 
    /**
@@ -30,15 +30,9 @@ public class Field
     */
    public Field(int width, int height)
    {
-      _occupants = new FieldCell[width][height];
+      _redrawField = new AtomicBoolean(true);
+      _occupants = new FieldOccupant[width][height];
 
-      for (int i = 0; i < width; i++)
-      {
-         for (int j = 0; j < height; j++)
-         {
-            _occupants[i][j] = new FieldCell(i, j);
-         }
-      }
    } // Field
 
 
@@ -70,7 +64,7 @@ public class Field
    public void setOccupantAt(int x, int y, FieldOccupant newOccupant)
    {
       _occupants[normalizeIndex(x, WIDTH_INDEX)][normalizeIndex(y,
-            !WIDTH_INDEX)].setOccupant(newOccupant);
+            !WIDTH_INDEX)] = newOccupant;
    } // setOccupantAt
 
 
@@ -79,7 +73,7 @@ public class Field
     * @param y is the y-coordinate of the cell whose contents are queried.
     * @return occupant of the cell (or null if unoccupied)
     */
-   public FieldCell getOccupantAt(int x, int y)
+   public FieldOccupant getOccupantAt(int x, int y)
    {
       return _occupants[normalizeIndex(x, WIDTH_INDEX)][normalizeIndex(y,
             !WIDTH_INDEX)];
@@ -87,28 +81,17 @@ public class Field
 
 
    /**
-    * @param x is the x-coordinate of the cell whose contents are queried.
-    * @param y is the y-coordinate of the cell whose contents are queried.
-    * @return true if the cell is occupied
-    */
-   public boolean isOccupied(int x, int y)
-   {
-      return getOccupantAt(x, y) != null;
-   } // isOccupied
-
-
-   /**
     * @return a collection of the occupants of cells adjacent to the
     * given cell; collection does not include null objects
     */
-   public Set<FieldCell> getNeighborCells(int x, int y)
+   public Set<FieldOccupant> getNeighborCells(int x, int y)
    {
       // For any cell there are 8 neighbors - left, right, above, below,
       // and the four diagonals. Define a collection of offset pairs that 
       // we'll step through to access each of the 8 neighbors
       final int[][] indexOffsets = { { 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 },
             { 1, 1 }, { 1, -1 }, { -1, 1 }, { -1, -1 } };
-      Set<FieldCell> neighbors = new HashSet<FieldCell>();
+      Set<FieldOccupant> neighbors = new HashSet<FieldOccupant>();
 
       // Iterate over the set of offsets, adding them to the x and y
       // indexes to check the neighboring cells
@@ -155,90 +138,4 @@ public class Field
          return bounds - (-index % bounds);
       }
    }
-
-
-   public FieldCell getFieldCell(int x, int y)
-   {
-      return _occupants[x][y];
-   }
-
-
-   public class FieldCell
-   {
-      // Initialize Instance Variables
-      private int[]         _coordinates;
-      private FieldOccupant _theOccupant;
-      private AtomicBoolean _lock;
-
-
-      /**
-       * Create an empty FieldCell object with coordinates at x, y
-       */
-      public FieldCell(int x, int y)
-      {
-         _theOccupant = null;
-         _coordinates = new int[] {x,y};
-         _lock = new AtomicBoolean(false);
-      }
-
-
-      /**
-       * Get the Coordinates of the cell
-       *
-       * @return the coordinates
-       */
-      public int[] getCoordinates()
-      {
-         return _coordinates;
-      }
-
-
-      /**
-       * Set the coordinates of the cell
-       *
-       * @param theCoordinates the Coordinates to set
-       */
-      public void setCoordinates(int[] theCoordinates)
-      {
-         _coordinates = theCoordinates;
-      }
-
-
-      /**
-       * Checks if the lock if false and sets to true if it is false
-       *
-       * @return The lock or null if the lock is already taken.
-       */
-      public synchronized AtomicBoolean getAndLock()
-      {
-         AtomicBoolean lock = null;
-
-         if (_lock.compareAndSet(false, true))
-         {
-            lock = _lock;
-         }
-
-         return lock;
-      }
-
-
-      public FieldOccupant getOccupant()
-      {
-         return _theOccupant;
-      }
-
-
-      public void setOccupant(FieldOccupant newOccupant)
-      {
-         _theOccupant = newOccupant;
-      }
-
-
-      public void clearOccupant()
-      {
-         _theOccupant = null;
-      }
-
-   }
-
 }

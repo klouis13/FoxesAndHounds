@@ -1,3 +1,4 @@
+import javax.swing.*;
 import java.awt.*;
 import java.util.*;
 
@@ -9,6 +10,8 @@ import java.util.*;
 public class Simulation
 {
    private static boolean _simulationStarted = false;
+   public static Field    _theField          = null;
+
 
    // The constant CELL_SIZE determines the size of each cell on the 
    // screen during animation.  (You may change this if you wish.)
@@ -20,146 +23,6 @@ public class Simulation
    {
       return _simulationStarted;
    }
-
-
-   /**
-    * Computes the next state of the field from the current state and
-    * returns the new state
-    *
-    * @param currentState is the current state of the Field
-    * @return new field state after one timestep
-    */
-  /* private static Field performTimestep(Field currentState)
-   {
-      // Define two constants that set bounds for minimum number
-      // of hounds and foxes nearby before actions are taken
-      final int MIN_HOUND_NEIGHBORS = 2;
-      final int MIN_FOX_NEIGHBORS = 2;
-
-      // Create the next state of the field; initially empty
-      Field nextState = new Field(currentState.getWidth(),
-            currentState.getHeight());
-      Set<FieldOccupant> neighbors;
-      int neighboringHounds = 0;
-      int neighboringFoxes = 0;
-      FieldOccupant occupant = null;
-
-      // Iterate over the current field's state and set up the
-      // corresponding cell in the next state based on the 
-      // occupants of the neighboring cells in the current state
-      for (int i = 0; i < currentState.getWidth(); i++)
-      {
-         for (int j = 0; j < currentState.getHeight(); j++)
-         {
-            // Iterate over the neighbors and see how many foxes and
-            // hounds are nearby
-            neighboringFoxes = 0;
-            neighboringHounds = 0;
-            for (FieldOccupant neighbor : currentState.getNeighborsOf(i, j))
-            {
-               if (neighbor instanceof Fox)
-               {
-                  neighboringFoxes++;
-               }
-               else if (neighbor instanceof Hound)
-               {
-                  neighboringHounds++;
-               }
-            } // for
-
-            // If this cell is occupied, change it's state based on what
-            // it holds and what the neighboring cells hold
-            if (currentState.isOccupied(i, j))
-            {
-               occupant = currentState.getOccupantAt(i, j);
-
-               // If a cell contains a Hound update its status based on
-               // the neighbors as described below
-               if (occupant instanceof Hound)
-               {
-                  // If any of its neighbors is a Fox, then the Hound eats 
-                  // during the timestep, and it remains in the cell at 
-                  // the end of the timestep with its hunger completely 
-                  // gone. (We may have multiple Hounds sharing the same 
-                  // Fox. This is fine; miraculously, they all get enough 
-                  // to eat.)
-                  if (neighboringFoxes > 0)
-                  {
-                     ((Hound) occupant).eats();
-                     nextState.setOccupantAt(i, j, occupant);
-                  }
-                  // If none of its neighbors is a Fox, it gets hungrier 
-                  // during the timestep. If this timestep is the 
-                  // (starveTime + 1)th consecutive timestep the Hound 
-                  // has gone without eating, then the Hound dies 
-                  // (disappears). Otherwise, it remains in the cell but 
-                  // gets closer to starvation.
-                  else
-                  {
-                     ((Hound) occupant).getHungrier();
-                     // If still alive, the hounds lives on in the
-                     // new state, otherwise it's gone
-                     if (!((Hound) occupant).hasStarved())
-                     {
-                        nextState.setOccupantAt(i, j, occupant);
-                     }
-                  }
-               } // if Hound
-
-               // Otherwise if a cell contains a Fox update its status 
-               // based on the neighbors as described below
-               else if (occupant instanceof Fox)
-               {
-                  // If enough of its neighbors are Hounds, then a 
-                  // new Hound is born in this cell. Hounds are well-fed 
-                  // at birth.
-                  if (neighboringHounds >= MIN_HOUND_NEIGHBORS)
-                  {
-                     // A new Hound replaces the Fox
-                     nextState.setOccupantAt(i, j, new Hound());
-                  }
-                  // If all of its neighbor cells are either empty or 
-                  // contain other Foxes, (i.e., no Hounds) then the 
-                  // Fox stays where it is.  
-                  else if (neighboringHounds == 0)
-                  {
-                     nextState.setOccupantAt(i, j, occupant);
-                  }
-                  // If one of its neighbors is a Hound, then the Fox is 
-                  // eaten by a Hound, and therefore disappears (i.e., 
-                  // we don't put anything in the cell in the new state)
-               } // if Fox
-            } // if occupied
-
-            else // Cell is empty
-            {
-               // If a minimum number of neighbors are Foxes, and at 
-               // most one of its neighbors is a Hound, then a new Fox 
-               // is born in that cell.
-               if (neighboringHounds <= 1
-                     && neighboringFoxes >= MIN_FOX_NEIGHBORS)
-               {
-                  nextState.setOccupantAt(i, j, new Fox());
-               }
-               // If a minimum number of neighbors are Foxes, and a 
-               // minimum number of neighbors are Hounds, then a 
-               // new well-fed Hound is born in that cell.
-               else if (neighboringHounds >= MIN_HOUND_NEIGHBORS
-                     && neighboringFoxes >= MIN_FOX_NEIGHBORS)
-               {
-                  nextState.setOccupantAt(i, j, new Hound());
-               }
-               // If a cell is empty, and fewer than the minimum number 
-               // of neighbors contain Foxes, then the cell remains 
-               // empty (i.e., we don't put anyting in the cell in 
-               // the new state).
-            } // empty cell
-         } // for each row
-      } // for each column
-
-      return nextState;
-
-   } // performTimestep*/
 
 
    /**
@@ -175,21 +38,15 @@ public class Simulation
       if (graphicsContext != null)
       {
          // Iterate over the cells and draw the thing in that cell
-         for (int i = 0; i < theField.getHeight(); i++)
+         for (int j = 0; j < theField.getHeight(); j++)
          {
-            for (int j = 0; j < theField.getWidth(); j++)
+            for (int i = 0; i < theField.getWidth(); i++)
             {
                // Get the color of the object in that cell and set the cell color
-               if (theField.isOccupied(j, i))
-               {
-                  graphicsContext.setColor(
-                        theField.getOccupantAt(j, i).getDisplayColor());
-               }
-               else
-               {
-                  graphicsContext.setColor(Color.white);
-               }
-               graphicsContext.fillRect(j * CELL_SIZE, i * CELL_SIZE, CELL_SIZE,
+               graphicsContext
+                     .setColor(theField.getOccupantAt(i, j).getDisplayColor());
+
+               graphicsContext.fillRect(i * CELL_SIZE, j * CELL_SIZE, CELL_SIZE,
                      CELL_SIZE);
             } // for
          } // for
@@ -203,19 +60,12 @@ public class Simulation
          }
          System.out.println();
          // For each cell, display the thing in that cell
-         for (int i = 0; i < theField.getHeight(); i++)
+         for (int j = 0; j < theField.getHeight(); j++)
          {
             System.out.print("|"); // separate cells with '|' 
-            for (int j = 0; j < theField.getWidth(); j++)
+            for (int i = 0; i < theField.getWidth(); i++)
             {
-               if (theField.isOccupied(j, i))
-               {
-                  System.out.print(theField.getOccupantAt(j, i) + "|");
-               }
-               else
-               {
-                  System.out.print(" |");
-               }
+               System.out.print(theField.getOccupantAt(i, j) + "|");
             }
             System.out.println();
          } // for
@@ -242,10 +92,9 @@ public class Simulation
       int width = 50;                              // Default width
       int height = 25;                             // Default height
       int starveTime = Hound.DEFAULT_STARVE_TIME;  // Default starvation time
-      double probabilityFox = 0.5;                 // Default probability of fox
+      double probabilityFox = -1;                 // Default probability of fox
       double probabilityHound = .15;              // Default probability of hound
       boolean graphicsMode = true;
-      Field theField = null;
 
       // If we attach a GUI to this program, these objects will hold
       // references to the GUI elements
@@ -307,35 +156,36 @@ public class Simulation
       } // for
 
       // Create the initial Field.
-      theField = new Field(width, height);
+      _theField = new Field(width, height);
 
       // Set the starve time for hounds
       Hound.setStarveTime(starveTime);
 
       // Initialize the starting field with elements
-      theField = setStartingField(theField, probabilityFox, probabilityHound);
+      _theField = setStartingField(_theField, probabilityFox, probabilityHound);
 
       // Check if graphics mode was set and if so create the frame, canvas,
       // and window. If not in graphics mode, these will remain null
       if (graphicsMode)
       {
          windowFrame = new Frame("Foxes and Hounds");
-         windowFrame.setSize(theField.getWidth() * CELL_SIZE + 10,
-               theField.getHeight() * CELL_SIZE + 30);
+         windowFrame.setSize(_theField.getWidth() * CELL_SIZE + 10,
+               _theField.getHeight() * CELL_SIZE + 30);
          windowFrame.setVisible(true);
+        // ((JFrame) windowFrame).setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
          // Create a "Canvas" we can draw upon; attach it to the window.
          drawingCanvas = new Canvas();
          drawingCanvas.setBackground(Color.white);
-         drawingCanvas.setSize(theField.getWidth() * CELL_SIZE,
-               theField.getHeight() * CELL_SIZE);
+         drawingCanvas.setSize(_theField.getWidth() * CELL_SIZE,
+               _theField.getHeight() * CELL_SIZE);
          windowFrame.add(drawingCanvas);
          graphicsContext = drawingCanvas.getGraphics();
       } // if
 
       _simulationStarted = true;
 
-      redrawField(theField, graphicsContext);
+      redrawField(_theField, graphicsContext);
 
    } // main
 
@@ -344,7 +194,7 @@ public class Simulation
     * Add elements to the field to start. Each element is a new thread and is
     * started. The thread will wait for the field to be drawn to start computing
     *
-    * @param theField         The field to add elements to
+    * @param _theField         The field to add elements to
     * @param probabilityFox   The probability that a fox will be created
     * @param probabilityHound The probability that a hound will be created
     */
@@ -353,7 +203,7 @@ public class Simulation
    {
       // Initialize variables
       Random randomGenerator = new Random();
-      FieldOccupant newOccupant;
+      FieldOccupant newOccupant = null;
 
       // Visit each cell; randomly placing a Fox, Hound, or nothing in each.
       for (int i = 0; i < theField.getWidth(); i++)
@@ -364,22 +214,30 @@ public class Simulation
             // adding a hound, then place a hound.
             if (randomGenerator.nextFloat() <= probabilityHound)
             {
-               System.out.println("Hound");
+               //System.out.println("Hound");
 
-               newOccupant = new Hound(theField.getFieldCell(i,j));
-               newOccupant.start();
-               theField.setOccupantAt(i, j, newOccupant);
+               newOccupant = new Hound(i, j, false);
+               new Thread((Hound) newOccupant).start();
             }
             // If a random number is less than or equal to the probability
             // of adding a fox, then place a fox
             else if (randomGenerator.nextGaussian() <= probabilityFox)
             {
-               System.out.println("Fox");
+              // System.out.println("Fox");
 
-               newOccupant = new Fox(theField.getFieldCell(i,j));
-               newOccupant.start();
-               theField.setOccupantAt(i, j, newOccupant);
+               newOccupant = new Fox(i, j, false);
+               new Thread((Fox) newOccupant).start();
             }
+            else
+            // The spot has neither a fox or a hound, so put an empty spot there
+            {
+               //System.out.println("Empty");
+
+               newOccupant = new Empty(i, j, false);
+            }
+
+            theField.setOccupantAt(i, j, newOccupant);
+
          } // for
       } // for
 
@@ -390,7 +248,7 @@ public class Simulation
    /*
     * Loop continuously redrawing the field each time the AtomicBoolean is set
     *
-    * @param theField        the field to redraw
+    * @param _theField        the field to redraw
     * @param graphicsContext the context for the graphics content if in graphic mode
     */
    private static void redrawField(Field theField, Graphics graphicsContext)
@@ -402,6 +260,7 @@ public class Simulation
          // Check if the redraw boolean is set and set it to false
          if (Field._redrawField.getAndSet(false))
          {
+            System.out.println("PRINT");
             // Wait 30 milliseconds for the field to draw
             Thread.sleep(30);
 
@@ -411,4 +270,4 @@ public class Simulation
       }
    }
 
-} 
+}
