@@ -3,7 +3,7 @@ import java.awt.Color;
 /**
  * Hounds can display themsevles. They also get hungry
  */
-public class Hound extends FieldOccupant
+public class Hound extends FieldOccupant implements Runnable
 {
    // Declare instance variables
    private static int _houndStarveTime;
@@ -16,9 +16,9 @@ public class Hound extends FieldOccupant
    /**
     * Create a hound
     */
-   public Hound(int x, int y)
+   public Hound(int x, int y, boolean initLock)
    {
-      super(x, y);
+      super(x, y, initLock);
       _hungerLevel = _houndStarveTime;
    }
 
@@ -54,24 +54,21 @@ public class Hound extends FieldOccupant
 
    public void run()
    {
-      /*
-      while (!Simulation.hasSimulationStarted())
+      while (_hungerLevel != 0)
       {
-         // Wait for the simulation to start
-      }
-      /*while (_hungerLevel != 0)
-      {
+         if (!Simulation.hasSimulationStarted())
+         {
 
+         }
          try
          {
-            sleep();
+           threadSleep();
          }
          catch (InterruptedException e)
          {
 
          }
       }
-      */
    }
 
 }
