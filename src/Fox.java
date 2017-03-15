@@ -52,7 +52,7 @@ public class Fox extends FieldOccupant implements Runnable
       AtomicBoolean newFoxLock;
       FieldOccupant chosenNeighbor;
       FieldOccupant chosenFox;
-      FieldOccupant newFox;
+      FieldOccupant newFox = null;
 
       // Create an array to hold FieldOccupants that will need to be accessed later
       FieldOccupant[] specificNeighbors = new FieldOccupant[NUM_NEIGHBORS];
@@ -147,27 +147,8 @@ public class Fox extends FieldOccupant implements Runnable
                            // Make sure you haven't been interrupted
                            if (!isThreadInterrupted())
                            {
-                              // Create a lock for the new fox so that we can unlock it after the thread is started
-                              newFoxLock = new AtomicBoolean(true);
-
-                              // Create a new Fox Object with the lock on
-                              newFox = new Fox(chosenNeighbor.getX(),
-                                    chosenNeighbor.getY(), newFoxLock);
-
-                              // Put a new fox in the empty cell
-                              Simulation._theField
-                                    .setOccupantAt(chosenNeighbor.getX(),
-                                          chosenNeighbor.getY(), newFox);
-
-                              // Start the fox thread
-                              new Thread((Fox) newFox).start();
-
-                              // Unlock the new fox so others on the field can use it.
-                              newFoxLock.getAndSet(false);
-
-                              // Set the Boolean to redraw the field
-                              Field.setRedrawField();
-
+                              // Create a new Fox
+                              createNewFieldOccupant(chosenNeighbor.getX(), chosenNeighbor.getY(), FOX);
                            }
                            // Reset the second foxes lock to false
                            secondFoxLock.getAndSet(false);

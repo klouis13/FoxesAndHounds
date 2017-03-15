@@ -106,7 +106,7 @@ public abstract class FieldOccupant
       final int MAX_SLEEP_TIME = 1250;
       final int MIN_SLEEP_TIME = 750;
 
-      int sleepTime = (int) Math.random() * (MAX_SLEEP_TIME - MIN_SLEEP_TIME)
+      int sleepTime = (int) (Math.random() * (MAX_SLEEP_TIME - MIN_SLEEP_TIME))
             + MIN_SLEEP_TIME;
 
       Thread.sleep(sleepTime);
@@ -116,9 +116,7 @@ public abstract class FieldOccupant
 
 
    /**
-    * @param x the x coordinate
-    * @param y the y coordinate
-    * @return an array of the neighbors around a specific cell
+    * @return an array of the neighbors around the object
     */
    protected FieldOccupant[] getNeighborsArray()
    {
@@ -134,9 +132,6 @@ public abstract class FieldOccupant
    }
 
    /**
-    *
-    * @param x
-    * @param y
     * @return
     */
    protected int[] dirtyReadNeighbors()
@@ -164,8 +159,7 @@ public abstract class FieldOccupant
 
    /**
     * Count the number of hounds around a given cell
-    * @param x the x coordiantes
-    * @param y the y coordinates
+    *
     * @return the number of hounds
     */
    protected int numNeighboringHounds()
@@ -182,6 +176,58 @@ public abstract class FieldOccupant
       return houndCount;
    }
 
+
+   /**
+    * Create a new FieldOccupant and set the update field flas
+    * @param x
+    * @param y
+    * @param newOccupantType
+    */
+   protected void createNewFieldOccupant(int x, int y, int newOccupantType)
+   {
+      // Create a lock for the new fox so that we can unlock it after the thread is started
+      AtomicBoolean newOccupantLock = new AtomicBoolean(true);
+      FieldOccupant newOccupant = null;
+
+      // Create and Start the thread if was a Fox or Hound
+      switch (newOccupantType)
+      {
+         // Create a new FieldOccupant Object
+         case FOX:
+            newOccupant = new Fox(x,
+                  y, newOccupantLock);
+            break;
+         case HOUND:
+            newOccupant = new Hound(x,
+                  y, newOccupantLock);
+            break;
+         case EMPTY:
+            newOccupant = new Empty(x,
+                  y, false);
+            break;
+      }
+
+      // Put a new Occupant in the field
+      Simulation._theField
+            .setOccupantAt(x, y, newOccupant);
+
+      // Create and Start the thread if was a Fox or Hound
+      switch (newOccupantType)
+      {
+         case FOX:
+            new Thread((Fox) newOccupant).start();
+            break;
+         case HOUND:
+            new Thread((Hound) newOccupant).start();
+            break;
+      }
+
+      // Unlock the new Occupant so others on the field can use it.
+      newOccupantLock.getAndSet(false);
+
+      // Set the Boolean to redraw the field
+      Field.setRedrawField();
+   }
 
    /**
     * @param max the max range exclusive

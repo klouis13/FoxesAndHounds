@@ -73,6 +73,7 @@ public class Hound extends FieldOccupant implements Runnable
 
    public void run()
    {
+      // Declare Variables
       int relevantNeighborCount;
       int houndCount;
       int foxCount;
@@ -136,11 +137,13 @@ public class Hound extends FieldOccupant implements Runnable
             // Iterate over the neighbors of the chosen cell looking for foxes and hounds
             for (FieldOccupant currentOccupant : chosenNeighbor.getNeighbors())
             {
+               // Count and store the hounds that are around the neighbor excluding this hound
                if (currentOccupant instanceof Hound && this != currentOccupant)
                {
                   foundHounds[houndCount] = currentOccupant;
                   houndCount++;
                }
+               // Count and store the foxes around the hound
                else if (currentOccupant instanceof Fox)
                {
                   foundFoxes[foxCount] = currentOccupant;
@@ -178,42 +181,23 @@ public class Hound extends FieldOccupant implements Runnable
                         // Make sure the chosenHound is still there
                         if (houndLock != null && chosenHound instanceof Hound)
                         {
-                           // Create a lock for the new Hound so that we can unlock it after the thread is started
-                           newHoundLock = new AtomicBoolean(true);
-
-                           // Create a new Hound Object with the lock on
-                           newHound = new Hound(chosenNeighbor.getX(),
-                                 chosenNeighbor.getY(), newHoundLock);
-
-                           // Put a new Hound in the empty cell
-                           Simulation._theField
-                                 .setOccupantAt(chosenNeighbor.getX(),
-                                       chosenNeighbor.getY(), newHound);
-
-                           // Start the Hound thread
-                           new Thread((Hound) newHound).start();
-
-                           // Unlock the new Hound so others on the field can use it.
-                           newHoundLock.getAndSet(false);
+                           // Create a new Hound
+                           createNewFieldOccupant(chosenNeighbor.getX(),
+                                 chosenNeighbor.getY(), HOUND);
                         }
                      }
                      if (newHound == null)
                      {
-                        // Put a new Empty Cell in the Foxes place
-                        Simulation._theField
-                              .setOccupantAt(chosenNeighbor.getX(),
-                                    chosenNeighbor.getY(),
-                                    new Empty(chosenNeighbor.getX(),
-                                          chosenNeighbor.getY(), false));
+                        // Create a new empty cell where the fox was
+                        createNewFieldOccupant(chosenNeighbor.getX(),
+                              chosenNeighbor.getY(), EMPTY);
                      }
+
                      // Tell the fox that it has been eaten
                      chosenNeighbor.interruptThread();
 
                      // Reset this hounds hunger
                      fed();
-
-                     // Set the Boolean to redraw the field
-                     Field.setRedrawField();
 
                      // Unlock the fox (might not need)
                      neighborLock.getAndSet(false);
@@ -262,31 +246,12 @@ public class Hound extends FieldOccupant implements Runnable
                               if (secondFoxLock != null
                                     && secondChosenFox instanceof Fox)
                               {
-                                 // Create a lock for the new Hound so that we can unlock it after the thread is started
-                                 newHoundLock = new AtomicBoolean(true);
-
-                                 // Create a new Hound Object with the lock on
-                                 newHound = new Hound(chosenNeighbor.getX(),
-                                       chosenNeighbor.getY(), newHoundLock);
-
-                                 // Put a new Hound in the empty cell
-                                 Simulation._theField
-                                       .setOccupantAt(chosenNeighbor.getX(),
-                                             chosenNeighbor.getY(), newHound);
-
-                                 // Start the Hound thread
-                                 new Thread((Hound) newHound).start();
-
-                                 // Unlock the new Hound so others on the field can use it.
-                                 newHoundLock.getAndSet(false);
+                                 // Create a new Hound in the Empty Cell
+                                 createNewFieldOccupant(chosenNeighbor.getX(), chosenNeighbor.getY(), HOUND);
 
                                  // Put a new Empty Cell in the Foxes place
-                                 Simulation._theField
-                                       .setOccupantAt(firstChosenFox.getX(),
-                                             firstChosenFox.getY(),
-                                             new Empty(firstChosenFox.getX(),
-                                                   firstChosenFox.getY(),
-                                                   false));
+                                 createNewFieldOccupant(firstChosenFox.getX(),
+                                       firstChosenFox.getY(), EMPTY);
 
                                  // Tell the fox that it has been eaten
                                  firstChosenFox.interruptThread();
@@ -319,13 +284,9 @@ public class Hound extends FieldOccupant implements Runnable
 
          }
       }
+
       // The hound died put a new Empty Cell in the Hounds place
-      Simulation._theField
-            .setOccupantAt(getX(), getY(), new Empty(getX(), getY(), false));
-
-      // Set the Boolean to redraw the field
-      Field.setRedrawField();
-
+      createNewFieldOccupant(getX(), getY(), EMPTY);
    }
 }
 
