@@ -189,10 +189,9 @@ public abstract class FieldOccupant
       AtomicBoolean newOccupantLock = new AtomicBoolean(true);
       FieldOccupant newOccupant = null;
 
-      // Create and Start the thread if was a Fox or Hound
+      // Create a new FieldOccupant
       switch (newOccupantType)
       {
-         // Create a new FieldOccupant Object
          case FOX:
             newOccupant = new Fox(x,
                   y, newOccupantLock);
@@ -203,7 +202,7 @@ public abstract class FieldOccupant
             break;
          case EMPTY:
             newOccupant = new Empty(x,
-                  y, false);
+                  y, newOccupantLock);
             break;
       }
 
@@ -211,7 +210,7 @@ public abstract class FieldOccupant
       Simulation._theField
             .setOccupantAt(x, y, newOccupant);
 
-      // Create and Start the thread if was a Fox or Hound
+      // Create and Start the thread if it was a Fox or Hound
       switch (newOccupantType)
       {
          case FOX:

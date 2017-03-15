@@ -1,4 +1,5 @@
 import java.awt.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Represents a Empty (empty) cell in the field
@@ -14,6 +15,12 @@ public class Empty extends FieldOccupant
    {
       super(x,y, initLock);
    }
+
+   public Empty(int x, int y, AtomicBoolean lock)
+   {
+      super(x,y, lock);
+   }
+
 
    /**
     * @return the color to use for a cell occupied by a Fox

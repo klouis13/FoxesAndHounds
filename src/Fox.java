@@ -49,10 +49,8 @@ public class Fox extends FieldOccupant implements Runnable
       AtomicBoolean myLock;
       AtomicBoolean neighborLock;
       AtomicBoolean secondFoxLock;
-      AtomicBoolean newFoxLock;
       FieldOccupant chosenNeighbor;
       FieldOccupant chosenFox;
-      FieldOccupant newFox = null;
 
       // Create an array to hold FieldOccupants that will need to be accessed later
       FieldOccupant[] specificNeighbors = new FieldOccupant[NUM_NEIGHBORS];
@@ -137,21 +135,25 @@ public class Fox extends FieldOccupant implements Runnable
                   {
                      // Try to Lock the empty cell and then check
                      neighborLock = chosenNeighbor.lockAndGet();
-                     if (neighborLock != null
-                           && chosenNeighbor instanceof Empty)
+                     if (neighborLock != null)
                      {
-                        // Try to lock the other fox then check
-                        secondFoxLock = chosenFox.lockAndGet();
-                        if (secondFoxLock != null && chosenFox instanceof Fox)
+                        if (chosenNeighbor instanceof Empty)
                         {
-                           // Make sure you haven't been interrupted
-                           if (!isThreadInterrupted())
+                           // Try to lock the other fox then check
+                           secondFoxLock = chosenFox.lockAndGet();
+                           if (secondFoxLock != null)
                            {
-                              // Create a new Fox
-                              createNewFieldOccupant(chosenNeighbor.getX(), chosenNeighbor.getY(), FOX);
+                              // Make sure you haven't been interrupted
+                              if (chosenFox instanceof Fox
+                                    && !isThreadInterrupted())
+                                 {
+                                 // Create a new Fox
+                                 createNewFieldOccupant(chosenNeighbor.getX(),
+                                       chosenNeighbor.getY(), FOX);
+                              }
+                              // Reset the second foxes lock to false
+                              secondFoxLock.getAndSet(false);
                            }
-                           // Reset the second foxes lock to false
-                           secondFoxLock.getAndSet(false);
                         }
                         // Reset the Neibors lock to false
                         neighborLock.getAndSet(false);
@@ -165,7 +167,6 @@ public class Fox extends FieldOccupant implements Runnable
          // The fox is done doing things so it sleeps
          try
          {
-            //  System.out.println("sleep");
             threadSleep();
          }
          catch (InterruptedException e)
