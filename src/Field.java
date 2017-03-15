@@ -18,6 +18,8 @@ public class Field
    // indices
    private final static boolean WIDTH_INDEX = true;
 
+   // Redraw field flag, can be accessed and set in other classes.
+   private static AtomicBoolean _redrawField;
 
    /**
     * Creates an empty field of given width and height
@@ -27,9 +29,22 @@ public class Field
     */
    public Field(int width, int height)
    {
+      _redrawField = new AtomicBoolean(true);
       _occupants = new FieldOccupant[width][height];
 
    } // Field
+
+
+   public static void setRedrawField()
+   {
+      _redrawField.getAndSet(true);
+   }
+
+   public static AtomicBoolean getRedrawField()
+   {
+      return _redrawField;
+   }
+
 
 
    /**

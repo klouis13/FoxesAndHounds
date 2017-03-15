@@ -15,13 +15,14 @@ public class Simulation
    public static CountDownLatch _simulationStarted;
    public static Field _theField = null;
 
-   // Redraw field flag, can be accessed and set in other classes.
-   public static AtomicBoolean _redrawField = new AtomicBoolean(true);
+
 
    // The constant CELL_SIZE determines the size of each cell on the 
    // screen during animation.  (You may change this if you wish.)
    private static final int    CELL_SIZE     = 20;
    private static final String USAGE_MESSAGE = "Usage: java Simulation [--graphics] [--width int] [--height int] [--starvetime int] [--fox float] [--hound float]";
+
+
 
 
    private static void startSimulation()
@@ -95,10 +96,10 @@ public class Simulation
        *  Default parameters.  (You may change these if you wish.)
        */
       int width = 50;                              // Default width
-      int height = 25;                             // Default height
+      int height = 50;                             // Default height
       int starveTime = Hound.DEFAULT_STARVE_TIME;  // Default starvation time
-      double probabilityFox = -1;                 // Default probability of fox
-      double probabilityHound = .15;              // Default probability of hound
+      double probabilityFox = .15;                 // Default probability of fox
+      double probabilityHound = .5;              // Default probability of hound
       boolean graphicsMode = true;
 
       // If we attach a GUI to this program, these objects will hold
@@ -267,7 +268,7 @@ public class Simulation
       while (true)
       {
          // Check if the redraw boolean is set and set it to false
-         if (_redrawField.getAndSet(false))
+         if (Field.getRedrawField().getAndSet(false))
          {
             // Wait 30 milliseconds for the field to draw
             Thread.sleep(30);

@@ -21,10 +21,17 @@ public class Hound extends FieldOccupant implements Runnable
    {
       super(x, y, initLock);
 
-      // Convert _houndStarveTime to ms
-      _houndStarveTime = _houndStarveTime * 1000;
+      // New hounds are not hungry
+      fed();
+   }
 
-      _hungerLevel = _houndStarveTime;
+
+   public Hound(int x, int y, AtomicBoolean theLock)
+   {
+      super(x, y, theLock);
+
+      // New hounds are not hungry
+      fed();
    }
 
 
@@ -46,6 +53,12 @@ public class Hound extends FieldOccupant implements Runnable
    }
 
 
+   private void fed()
+   {
+      _hungerLevel = _houndStarveTime;
+   }
+
+
    /**
     * Sets the starve time for this class
     *
@@ -53,19 +66,34 @@ public class Hound extends FieldOccupant implements Runnable
     */
    public static void setStarveTime(int starveTime)
    {
-      _houndStarveTime = starveTime;
+      // Convert to ms
+      _houndStarveTime = starveTime * 1000;
    }
 
 
    public void run()
    {
-      FieldOccupant[] neighbors;
-      FieldOccupant[] otherNeighbors;
-      boolean completedAction;
+      int relevantNeighborCount;
+      int houndCount;
+      int foxCount;
+
+      AtomicBoolean myLock;
+      AtomicBoolean houndLock;
       AtomicBoolean neighborLock;
-      AtomicBoolean otherNeighborLock;
-      FieldOccupant newOccupant;
-      int[] numNeighborTypes;
+      AtomicBoolean firstFoxLock;
+      AtomicBoolean secondFoxLock;
+      AtomicBoolean newHoundLock;
+
+      FieldOccupant chosenNeighbor;
+      FieldOccupant chosenHound;
+      FieldOccupant firstChosenFox;
+      FieldOccupant secondChosenFox;
+      FieldOccupant newHound;
+
+      // Create an array to hold FieldOccupants that will need to be accessed later
+      FieldOccupant[] relevantNeighbors = new FieldOccupant[NUM_NEIGHBORS];
+      FieldOccupant[] foundHounds = new FieldOccupant[NUM_NEIGHBORS];
+      FieldOccupant[] foundFoxes = new FieldOccupant[NUM_NEIGHBORS];
 
       try
       {
@@ -79,123 +107,205 @@ public class Hound extends FieldOccupant implements Runnable
       // Run while the Hound has not starved
       while (_hungerLevel > 0)
       {
-         completedAction = false;
+         // Reset the counter for the FieldOccupants that need to be stored
+         relevantNeighborCount = 0;
 
-         while (!completedAction)
+         // Iterate over the neighbors
+         for (FieldOccupant currentOccupant : getNeighbors())
          {
-            // Get the neighbors of the Hound
-            neighbors = getNeighborsArray();
-
-            for (int i = 0; i < neighbors.length && !completedAction; i++)
+            // Check if the neighbor is an Empty Object
+            if (currentOccupant instanceof Fox
+                  || currentOccupant instanceof Empty)
             {
-               if (neighbors[i] instanceof Fox)
+               // Store the Empty objects in an array to randomly choose one later
+               relevantNeighbors[relevantNeighborCount] = currentOccupant;
+
+               // increment the count for either a fox or empty cell around
+               relevantNeighborCount++;
+            }
+         }
+         // There was at least 1 fox or empty cell around the hound
+         if (relevantNeighborCount > 0)
+         {
+            chosenNeighbor = randomOccupant(relevantNeighborCount,
+                  relevantNeighbors);
+
+            houndCount = 0;
+            foxCount = 0;
+
+            // Iterate over the neighbors of the chosen cell looking for foxes and hounds
+            for (FieldOccupant currentOccupant : chosenNeighbor.getNeighbors())
+            {
+               if (currentOccupant instanceof Hound && this != currentOccupant)
                {
-                  // Try to acquire the lock for the neighbor
-                  neighborLock = neighbors[i].lockAndGet();
-
-                  // Check if the lock was acquired
-                  if (neighborLock != null)
-                  {
-
-                     otherNeighbors = neighbors[i].getNeighborsArray();
-
-                     for (int j = 0;
-                          j < otherNeighbors.length && !completedAction; j++)
-                     {
-                        // Check if the cell is a hound
-                        if (otherNeighbors[j] instanceof Hound)
-                        {
-
-                           // Try to get the lock
-                           otherNeighborLock = otherNeighbors[j].lockAndGet();
-
-                           // Check if the lock was acquired
-                           if (otherNeighborLock != null)
-                           {
-
-                              //neighbors[i].interruptThread();
-
-                              // Create a new Hound Object with the lock on
-                              newOccupant = new Hound(neighbors[i].getX(),
-                                    neighbors[i].getY(), true);
-
-                              // Start the fox thread
-                              new Thread((Hound) newOccupant).start();
-
-                              // Put a new Hound in the Foxes cell and exit the for loop
-                              Simulation._theField
-                                    .setOccupantAt(neighbors[i].getX(),
-                                          neighbors[i].getY(), newOccupant);
-
-                              // Set the completedAction boolean to exit the loop
-                              completedAction = true;
-
-                              // Release the new Hound lock to make it available
-                              newOccupant._lock.getAndSet(false);
-
-                              otherNeighborLock.getAndSet(false);
-                           }
-                        }
-                     }
-                     if (!completedAction)
-                     {
-                        // Put a new Empty Cell in the Foxes cell and exit the for loop
-                        Simulation._theField.setOccupantAt(neighbors[i].getX(),
-                              neighbors[i].getY(),
-                              new Empty(neighbors[i].getX(),
-                                    neighbors[i].getY(), false));
-
-                        // Set the boolean to exit the while loop
-                        completedAction = true;
-                     }
-
-                     // The hound eats the fox and its hunger is gone
-                     _hungerLevel = _houndStarveTime;
-
-                     neighborLock.getAndSet(false);
-
-                     // Set the Boolean to redraw the field
-                     Field._redrawField.getAndSet(true);
-                  }
+                  foundHounds[houndCount] = currentOccupant;
+                  houndCount++;
                }
-               else if (neighbors[i] instanceof Empty)
+               else if (currentOccupant instanceof Fox)
                {
-                  otherNeighbors = neighbors[i].getNeighborsArray();
+                  foundFoxes[foxCount] = currentOccupant;
+                  foxCount++;
+               }
+            }
 
-                  for (int j = 0;
-                       j < otherNeighbors.length && !completedAction; j++)
+            // Check if the random Occupant chosen was a fox
+            if (chosenNeighbor instanceof Fox)
+            {
+               // Try to lock yourself
+               myLock = this.lockAndGet();
+
+               // Check that you acquired the lock
+               if (myLock != null)
+               {
+                  // Lock the fox
+                  neighborLock = chosenNeighbor.lockAndGet();
+
+                  // Make sure the the chosen occupant is still a fox
+                  if (neighborLock != null && chosenNeighbor instanceof Fox)
                   {
-                     // Try to get the lock
-                     otherNeighborLock = otherNeighbors[j].lockAndGet();
+                     // Reset the newHound object
+                     newHound = null;
 
-                     // Check if the lock was acquired
-                     if (otherNeighborLock != null)
+                     // Check that there was a hound nearby
+                     if (houndCount > 0)
                      {
-                        // Check if the cell is a hound
-                        if (otherNeighbors[j] instanceof Hound)
+                        // Choose a random hound
+                        chosenHound = randomOccupant(houndCount, foundHounds);
+
+                        // Lock the hound
+                        houndLock = chosenHound.lockAndGet();
+
+                        // Make sure the chosenHound is still there
+                        if (houndLock != null && chosenHound instanceof Hound)
                         {
-                           //neighbors[i].interruptThread();
+                           // Create a lock for the new Hound so that we can unlock it after the thread is started
+                           newHoundLock = new AtomicBoolean(true);
 
                            // Create a new Hound Object with the lock on
-                           newOccupant = new Hound(neighbors[i].getX(),
-                                 neighbors[i].getY(), true);
+                           newHound = new Hound(chosenNeighbor.getX(),
+                                 chosenNeighbor.getY(), newHoundLock);
 
-                           // Start the fox thread
-                           new Thread((Hound) newOccupant).start();
-
-                           // Put a new Hound in the Foxes cell and exit the for loop
+                           // Put a new Hound in the empty cell
                            Simulation._theField
-                                 .setOccupantAt(neighbors[i].getX(),
-                                       neighbors[i].getY(), newOccupant);
+                                 .setOccupantAt(chosenNeighbor.getX(),
+                                       chosenNeighbor.getY(), newHound);
 
-                           // Set the completedAction boolean to exit the loop
-                           completedAction = true;
+                           // Start the Hound thread
+                           new Thread((Hound) newHound).start();
 
-                           // Release the new Hound lock to make it available
-                           newOccupant._lock.getAndSet(false);
+                           // Unlock the new Hound so others on the field can use it.
+                           newHoundLock.getAndSet(false);
                         }
-                        otherNeighborLock.getAndSet(false);
                      }
+                     if (newHound == null)
+                     {
+                        // Put a new Empty Cell in the Foxes place
+                        Simulation._theField
+                              .setOccupantAt(chosenNeighbor.getX(),
+                                    chosenNeighbor.getY(),
+                                    new Empty(chosenNeighbor.getX(),
+                                          chosenNeighbor.getY(), false));
+                     }
+                     // Tell the fox that it has been eaten
+                     chosenNeighbor.interruptThread();
+
+                     // Reset this hounds hunger
+                     fed();
+
+                     // Set the Boolean to redraw the field
+                     Field.setRedrawField();
+
+                     // Unlock the fox (might not need)
+                     neighborLock.getAndSet(false);
+                  }
+
+                  // Unlock this hound
+                  myLock.getAndSet(false);
+               }
+            }
+            // Check if the chosen neighbor was an empty cell
+            else if (chosenNeighbor instanceof Empty)
+            {
+               if (houndCount > 0 && foxCount > 1)
+               {
+                  // Choose a random hound
+                  chosenHound = randomOccupant(houndCount, foundHounds);
+                  firstChosenFox = randomOccupant(foxCount, foundFoxes);
+                  secondChosenFox = randomOccupant(foxCount, foundFoxes);
+
+                  myLock = this.lockAndGet();
+
+                  if (myLock != null)
+                  {
+                     // Lock the Empty Cell
+                     neighborLock = chosenNeighbor.lockAndGet();
+
+                     // Make sure the the chosen occupant is still Empty
+                     if (neighborLock != null
+                           && chosenNeighbor instanceof Empty)
+                     {
+                        houndLock = chosenHound.lockAndGet();
+
+                        // Make sure the the chosen occupant is still a Hound
+                        if (houndLock != null && chosenHound instanceof Hound)
+                        {
+                           firstFoxLock = firstChosenFox.lockAndGet();
+
+                           // Make sure the the chosen occupant is still a fox
+                           if (firstFoxLock != null
+                                 && firstChosenFox instanceof Fox)
+                           {
+
+                              secondFoxLock = secondChosenFox.lockAndGet();
+
+                              // Make sure the the chosen occupant is still a fox
+                              if (secondFoxLock != null
+                                    && secondChosenFox instanceof Fox)
+                              {
+                                 // Create a lock for the new Hound so that we can unlock it after the thread is started
+                                 newHoundLock = new AtomicBoolean(true);
+
+                                 // Create a new Hound Object with the lock on
+                                 newHound = new Hound(chosenNeighbor.getX(),
+                                       chosenNeighbor.getY(), newHoundLock);
+
+                                 // Put a new Hound in the empty cell
+                                 Simulation._theField
+                                       .setOccupantAt(chosenNeighbor.getX(),
+                                             chosenNeighbor.getY(), newHound);
+
+                                 // Start the Hound thread
+                                 new Thread((Hound) newHound).start();
+
+                                 // Unlock the new Hound so others on the field can use it.
+                                 newHoundLock.getAndSet(false);
+
+                                 // Put a new Empty Cell in the Foxes place
+                                 Simulation._theField
+                                       .setOccupantAt(firstChosenFox.getX(),
+                                             firstChosenFox.getY(),
+                                             new Empty(firstChosenFox.getX(),
+                                                   firstChosenFox.getY(),
+                                                   false));
+
+                                 // Tell the fox that it has been eaten
+                                 firstChosenFox.interruptThread();
+
+                                 // Reset this hounds hunger
+                                 fed();
+
+                                 // Set the Boolean to redraw the field
+                                 Field.setRedrawField();
+
+                                 secondFoxLock.getAndSet(false);
+                              }
+                              firstFoxLock.getAndSet(false);
+                           }
+                           houndLock.getAndSet(false);
+                        }
+                        neighborLock.getAndSet(false);
+                     }
+                     myLock.getAndSet(false);
                   }
                }
             }
@@ -208,7 +318,14 @@ public class Hound extends FieldOccupant implements Runnable
          {
 
          }
-
       }
+      // The hound died put a new Empty Cell in the Hounds place
+      Simulation._theField
+            .setOccupantAt(getX(), getY(), new Empty(getX(), getY(), false));
+
+      // Set the Boolean to redraw the field
+      Field.setRedrawField();
+
    }
+}
 

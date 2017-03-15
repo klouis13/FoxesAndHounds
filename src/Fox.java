@@ -93,8 +93,8 @@ public class Fox extends FieldOccupant implements Runnable
          if (specificNeighborCount > 0)
          {
             // Chose a random empty cell from those around
-            chosenNeighbor = specificNeighbors[randomNumUptoMax(
-                  specificNeighborCount)];
+            chosenNeighbor = randomOccupant(specificNeighborCount,
+                  specificNeighbors);
 
             // Check that the thread is not interrupted
             if (!isThreadInterrupted())
@@ -128,8 +128,8 @@ public class Fox extends FieldOccupant implements Runnable
                      && specificNeighborCount > 0)
                {
                   // Choose a random Fox
-                  chosenFox = specificNeighbors[randomNumUptoMax(
-                        specificNeighborCount)];
+                  chosenFox = randomOccupant(specificNeighborCount,
+                        specificNeighbors);
 
                   // Try to Lock yourself then check
                   myLock = lockAndGet();
@@ -137,40 +137,37 @@ public class Fox extends FieldOccupant implements Runnable
                   {
                      // Try to Lock the empty cell and then check
                      neighborLock = chosenNeighbor.lockAndGet();
-                     if (neighborLock != null)
+                     if (neighborLock != null
+                           && chosenNeighbor instanceof Empty)
                      {
                         // Try to lock the other fox then check
                         secondFoxLock = chosenFox.lockAndGet();
-                        if (secondFoxLock != null)
+                        if (secondFoxLock != null && chosenFox instanceof Fox)
                         {
                            // Make sure you haven't been interrupted
                            if (!isThreadInterrupted())
                            {
-                              // Check that the items are still a fox and empty
-                              if (chosenFox instanceof Fox
-                                    && chosenNeighbor instanceof Empty)
-                              {
-                                 // Create a lock for the new fox so that we can unlock it after the thread is started
-                                 newFoxLock = new AtomicBoolean(true);
+                              // Create a lock for the new fox so that we can unlock it after the thread is started
+                              newFoxLock = new AtomicBoolean(true);
 
-                                 // Create a new Fox Object with the lock on
-                                 newFox = new Fox(chosenNeighbor.getX(),
-                                       chosenNeighbor.getY(), newFoxLock);
+                              // Create a new Fox Object with the lock on
+                              newFox = new Fox(chosenNeighbor.getX(),
+                                    chosenNeighbor.getY(), newFoxLock);
 
-                                 // Put a new fox in the empty cell and exit the for loop
-                                 Simulation._theField
-                                       .setOccupantAt(chosenNeighbor.getX(),
-                                             chosenNeighbor.getY(), newFox);
+                              // Put a new fox in the empty cell
+                              Simulation._theField
+                                    .setOccupantAt(chosenNeighbor.getX(),
+                                          chosenNeighbor.getY(), newFox);
 
-                                 // Start the fox thread
-                                 new Thread((Fox) newFox).start();
+                              // Start the fox thread
+                              new Thread((Fox) newFox).start();
 
-                                 // Unlock the new fox so others on the field can use it.
-                                 newFoxLock.getAndSet(false);
+                              // Unlock the new fox so others on the field can use it.
+                              newFoxLock.getAndSet(false);
 
-                                 // Set the Boolean to redraw the field
-                                 Simulation._redrawField.getAndSet(true);
-                              }
+                              // Set the Boolean to redraw the field
+                              Field.setRedrawField();
+
                            }
                            // Reset the second foxes lock to false
                            secondFoxLock.getAndSet(false);

@@ -187,9 +187,9 @@ public abstract class FieldOccupant
     * @param max the max range exclusive
     * @return a random number between 0 and max exclusive
     */
-   protected int randomNumUptoMax(int max)
+   protected FieldOccupant randomOccupant(int max, FieldOccupant[] theOccupants)
    {
-      return (int)(Math.random() * (max));
+      return theOccupants[(int)(Math.random() * (max))];
    }
 
 
