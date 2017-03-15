@@ -1,6 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * The Simulation class is a program that runs and animates a simulation of
@@ -9,7 +10,8 @@ import java.util.*;
 
 public class Simulation
 {
-   private static boolean _simulationStarted = false;
+   // Start the countdown latch
+   public static CountDownLatch _simulationStarted;
    public static Field    _theField          = null;
 
 
@@ -19,9 +21,9 @@ public class Simulation
    private static final String USAGE_MESSAGE = "Usage: java Simulation [--graphics] [--width int] [--height int] [--starvetime int] [--fox float] [--hound float]";
 
 
-   public static boolean hasSimulationStarted()
+   private static void startSimulation()
    {
-      return _simulationStarted;
+
    }
 
 
@@ -161,6 +163,9 @@ public class Simulation
       // Set the starve time for hounds
       Hound.setStarveTime(starveTime);
 
+      // Create the count down latch for the foxes and hounds to wait on
+      _simulationStarted = new CountDownLatch(1);
+
       // Initialize the starting field with elements
       _theField = setStartingField(_theField, probabilityFox, probabilityHound);
 
@@ -183,7 +188,8 @@ public class Simulation
          graphicsContext = drawingCanvas.getGraphics();
       } // if
 
-      _simulationStarted = true;
+      // Start the simulation
+      _simulationStarted.countDown();
 
       redrawField(_theField, graphicsContext);
 
@@ -204,6 +210,8 @@ public class Simulation
       // Initialize variables
       Random randomGenerator = new Random();
       FieldOccupant newOccupant = null;
+
+
 
       // Visit each cell; randomly placing a Fox, Hound, or nothing in each.
       for (int i = 0; i < theField.getWidth(); i++)

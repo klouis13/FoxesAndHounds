@@ -14,6 +14,9 @@ public abstract class FieldOccupant
 
    // Initialize Constants
    protected final int NUM_NEIGHBORS = 8;
+   protected final int FOX = 0;
+   protected final int HOUND = 1;
+   protected final int EMPTY_CELL = 2;
 
    /**
     * Create a FieldOccupant with a given x and y coordiante
@@ -85,10 +88,9 @@ public abstract class FieldOccupant
 
 
    /**
-    *
-    * @param x
-    * @param y
-    * @return
+    * @param x the x coordinate
+    * @param y the y coordinate
+    * @return an array of the neighbors around a specific cell
     */
    protected FieldOccupant[] getNeighborsArray()
    {
@@ -97,6 +99,35 @@ public abstract class FieldOccupant
             .toArray(new FieldOccupant[NUM_NEIGHBORS]);
    }
 
+
+   /**
+    *
+    * @param x
+    * @param y
+    * @return
+    */
+   protected int[] dirtyReadNeighbors()
+   {
+      int[] theOccupantCount = new int[3];
+
+      for (FieldOccupant theOccupant : getNeighborsArray())
+      {
+         if (theOccupant instanceof Fox)
+         {
+            theOccupantCount[0]++;
+         }
+         else if (theOccupant instanceof Hound)
+         {
+            theOccupantCount[1]++;
+         }
+         else
+         {
+            theOccupantCount[2]++;
+         }
+      }
+
+      return theOccupantCount;
+   }
 
    /**
     * Count the number of hounds around a given cell
@@ -117,6 +148,13 @@ public abstract class FieldOccupant
       }
       return houndCount;
    }
+
+
+   protected int randomToMax(int max)
+   {
+      return (int)(Math.random() * (max + 1));
+   }
+
 
    /**
     * @return the color to use for a cell containing a particular kind
