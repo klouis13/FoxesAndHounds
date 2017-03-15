@@ -13,6 +13,12 @@ public class Fox extends FieldOccupant implements Runnable
    }
 
 
+   public Fox(int x, int y, AtomicBoolean theLock)
+   {
+      super(x, y, theLock);
+   }
+
+
    /**
     * @return the color to use for a cell occupied by a Fox
     */
@@ -38,19 +44,23 @@ public class Fox extends FieldOccupant implements Runnable
    public void run()
    {
       // Declare Variables
-      boolean dead = false;
-      FieldOccupant[] neighbors;
-      FieldOccupant[] emptyCellsNeighbors;
+      int houndCount;
+      int specificNeighborCount;
+      AtomicBoolean myLock;
       AtomicBoolean neighborLock;
       AtomicBoolean secondFoxLock;
-      int[] numNeighborTypes;
-      int numHounds;
-      boolean completedAction;
-      FieldOccupant newFox;
+      AtomicBoolean newFoxLock;
       FieldOccupant chosenNeighbor;
-      int emptyCellCount = 0;
-      Empty[] emptyCells = new Empty[8];
+      FieldOccupant chosenFox;
+      FieldOccupant newFox;
 
+      // Create an array to hold FieldOccupants that will need to be accessed later
+      FieldOccupant[] specificNeighbors = new FieldOccupant[NUM_NEIGHBORS];
+
+      // Initialize Constants
+      final int MAX_NEIGHBORING_HOUNDS = 2;
+
+      // Wait for the simulation to start
       try
       {
          Simulation._simulationStarted.await();
@@ -61,117 +71,136 @@ public class Fox extends FieldOccupant implements Runnable
       }
 
       // Run while the fox has not been eaten
-      while (!dead)
+      while (!isThreadInterrupted())
       {
-         completedAction = false;
+         // Reset the counter for the FieldOccupants that need to be stored
+         specificNeighborCount = 0;
 
-         // Get the neighboring cells
-         neighbors = getNeighborsArray();
-
-         numNeighborTypes = dirtyReadNeighbors();
-
-         // Check that there are empty cells around the Fox
-         if (numNeighborTypes[EMPTY_CELL] > 0)
+         // Iterate over the neighbors
+         for (FieldOccupant currentOccupant : getNeighbors())
          {
-            // Iterate of the neighbors
-            for (int i = 0; i < neighbors.length && !completedAction; i++)
+            // Check if the neighbor is an Empty Object
+            if (currentOccupant instanceof Empty)
             {
-               // Check if the neighbor is an Empty Object
-               if (neighbors[i] instanceof Empty)
-               {
-                  // Try to get and lock the empty cell object
-                  neighborLock = neighbors[i].getAndLock();
+               // Store the Empty objects in an array to randomly choose one later
+               specificNeighbors[specificNeighborCount] = currentOccupant;
 
-                  // Check if the lock was aquired
-                  if (neighborLock != null)
-                  {
-                     emptyCells[emptyCellCount] = (Empty) neighbors[i];
-                  }
-               }
-            }
-            if (emptyCellCount > 0)
-            {
-
-               chosenNeighbor = emptyCells[randomToMax(emptyCellCount)];
-
-               // Get the neighbors of the Empty Cell
-               emptyCellsNeighbors = chosenNeighbor.getNeighborsArray();
-
-               // Reset the numHounds counter
-               numHounds = -1;
-
-               // Iterate of the neighbors of the empty cell or if 2 hounds are found adjacent
-               for (int j = 0; j < emptyCellsNeighbors.length && numHounds <= 1
-                     && !completedAction; j++)
-               {
-                  // Check the number of neighboring hounds the first time through
-                  if (numHounds == -1)
-                  {
-                     // Set the numHounds after checking
-                     numHounds = numNeighboringHounds(neighbors[i].getX(),
-                           neighbors[i].getY());
-                  }
-
-                  // Check for another fox
-                  if (emptyCellsNeighbors[j] instanceof Fox)
-                  {
-                     // Try to get the lock for this nextCell
-                     secondFoxLock = emptyCellsNeighbors[j].getAndLock();
-
-                     // Check that the lock for the second fox was aquired
-                     if (secondFoxLock != null)
-                     {
-                        // Check if this is a different fox than the original
-                        if (this != emptyCellsNeighbors[j])
-                        {
-                           // Create a new Fox Object with the lock on
-                           newFox = new Fox(neighbors[i].getX(),
-                                 neighbors[i].getY(), true);
-
-                           // Start the fox thread
-                           new Thread((Fox) newFox).start();
-
-                           // Put a new fox in the empty cell and exit the for loop
-                           Simulation._theField
-                                 .setOccupantAt(neighbors[i].getX(),
-                                       neighbors[i].getY(), newFox);
-
-                           // Set the completedAction boolean to exit the loop
-                           completedAction = true;
-
-                           // Release the new foxes lock to make it available
-                           newFox._lock.getAndSet(false);
-
-                           // Set the Boolean to redraw the field
-                           Field._redrawField.getAndSet(true);
-                        }
-                        // Release the lock of the second fox
-                        secondFoxLock.getAndSet(false);
-                     }
-                     else
-                     // Failed to acquire a lock on the fox
-                     {
-                        // Set the completedAction to get out of the loops
-                        completedAction = true;
-                     }
-                  }
-               }
-               // Set the lock of the empty cell back to false
-               neighborLock.getAndSet(false);
+               // increment the number of empty cells that you have
+               specificNeighborCount++;
             }
          }
-      }
+         // Check that at least 1 empty cell was found
+         if (specificNeighborCount > 0)
+         {
+            // Chose a random empty cell from those around
+            chosenNeighbor = specificNeighbors[randomNumUptoMax(
+                  specificNeighborCount)];
 
-      // The fox is done doing things so it sleeps
-      try
-      {
-         threadSleep();
-      }
-      catch (InterruptedException e)
-      {
-         dead = true;
+            // Check that the thread is not interrupted
+            if (!isThreadInterrupted())
+            {
+               // Reset the count for the neighbors
+               specificNeighborCount = 0;
+               houndCount = 0;
+
+               // Iterate over the neighbors of the empty cell looking for foxes and hounds
+               for (FieldOccupant currentOccupant : chosenNeighbor
+                     .getNeighbors())
+               {
+                  // Check for another fox
+                  if (currentOccupant instanceof Fox && currentOccupant != this)
+                  {
+                     // Store a reference to the fox
+                     specificNeighbors[specificNeighborCount] = currentOccupant;
+
+                     // Increment the fox count
+                     specificNeighborCount++;
+                  }
+                  // Check for a hound and count the number of hounds around
+                  else if (currentOccupant instanceof Hound)
+                  {
+                     // Increment the hound count
+                     houndCount++;
+                  }
+               }
+               // If the number of hounds is less than 2 and there was at least 1 other fox
+               if (houndCount < MAX_NEIGHBORING_HOUNDS
+                     && specificNeighborCount > 0)
+               {
+                  // Choose a random Fox
+                  chosenFox = specificNeighbors[randomNumUptoMax(
+                        specificNeighborCount)];
+
+                  // Try to Lock yourself then check
+                  myLock = lockAndGet();
+                  if (myLock != null)
+                  {
+                     // Try to Lock the empty cell and then check
+                     neighborLock = chosenNeighbor.lockAndGet();
+                     if (neighborLock != null)
+                     {
+                        // Try to lock the other fox then check
+                        secondFoxLock = chosenFox.lockAndGet();
+                        if (secondFoxLock != null)
+                        {
+                           // Make sure you haven't been interrupted
+                           if (!isThreadInterrupted())
+                           {
+                              // Check that the items are still a fox and empty
+                              if (chosenFox instanceof Fox
+                                    && chosenNeighbor instanceof Empty)
+                              {
+                                 // Create a lock for the new fox so that we can unlock it after the thread is started
+                                 newFoxLock = new AtomicBoolean(true);
+
+                                 // Create a new Fox Object with the lock on
+                                 newFox = new Fox(chosenNeighbor.getX(),
+                                       chosenNeighbor.getY(), newFoxLock);
+
+                                 // Put a new fox in the empty cell and exit the for loop
+                                 Simulation._theField
+                                       .setOccupantAt(chosenNeighbor.getX(),
+                                             chosenNeighbor.getY(), newFox);
+
+                                 // Start the fox thread
+                                 new Thread((Fox) newFox).start();
+
+                                 // Unlock the new fox so others on the field can use it.
+                                 newFoxLock.getAndSet(false);
+
+                                 // Set the Boolean to redraw the field
+                                 Simulation._redrawField.getAndSet(true);
+                              }
+                           }
+                           // Reset the second foxes lock to false
+                           secondFoxLock.getAndSet(false);
+                        }
+                        // Reset the Neibors lock to false
+                        neighborLock.getAndSet(false);
+                     }
+                     // Reset your lock to false
+                     myLock.getAndSet(false);
+                  }
+               }
+            }
+         }
+         // The fox is done doing things so it sleeps
+         try
+         {
+            //  System.out.println("sleep");
+            threadSleep();
+         }
+         catch (InterruptedException e)
+         {
+
+         }
       }
    }
+}
 
-}
-}
+
+
+
+
+
+

@@ -1,4 +1,6 @@
 import java.awt.Color;
+
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
@@ -8,15 +10,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public abstract class FieldOccupant
 {
    // Declare Instance variables
-   protected AtomicBoolean _lock;
+   private AtomicBoolean _lock;
    private int _xCoordiante;
    private int _yCoordinate;
 
    // Initialize Constants
    protected final int NUM_NEIGHBORS = 8;
-   protected final int FOX = 0;
-   protected final int HOUND = 1;
-   protected final int EMPTY_CELL = 2;
+   protected final int FOX           = 0;
+   protected final int HOUND         = 1;
+   protected final int EMPTY         = 2;
 
    /**
     * Create a FieldOccupant with a given x and y coordiante
@@ -27,6 +29,14 @@ public abstract class FieldOccupant
    public FieldOccupant(int x, int y, boolean initLock)
    {
       _lock = new AtomicBoolean(initLock);
+      _xCoordiante = x;
+      _yCoordinate = y;
+   }
+
+
+   protected FieldOccupant(int x, int y, AtomicBoolean theLock)
+   {
+      _lock = theLock;
       _xCoordiante = x;
       _yCoordinate = y;
    }
@@ -49,7 +59,7 @@ public abstract class FieldOccupant
     *
     * @return The lock or null if the lock is already taken.
     */
-   protected AtomicBoolean getAndLock()
+   protected AtomicBoolean lockAndGet()
    {
       AtomicBoolean lock = null;
 
@@ -62,9 +72,27 @@ public abstract class FieldOccupant
    }
 
 
+   protected AtomicBoolean unlockAndGet()
+   {
+      AtomicBoolean lock = null;
+
+      if (_lock.compareAndSet(true, false))
+      {
+         lock = _lock;
+   }
+
+      return lock;
+   }
+
    protected void interruptThread()
    {
       Thread.currentThread().interrupt();
+   }
+
+
+   protected boolean isThreadInterrupted()
+   {
+      return Thread.currentThread().isInterrupted();
    }
 
    /**
@@ -100,6 +128,11 @@ public abstract class FieldOccupant
    }
 
 
+   protected Set<FieldOccupant> getNeighbors()
+   {
+      return Simulation._theField.getNeighborCells(getX(), getY());
+   }
+
    /**
     *
     * @param x
@@ -110,19 +143,19 @@ public abstract class FieldOccupant
    {
       int[] theOccupantCount = new int[3];
 
-      for (FieldOccupant theOccupant : getNeighborsArray())
+      for (FieldOccupant theOccupant : getNeighbors())
       {
          if (theOccupant instanceof Fox)
          {
-            theOccupantCount[0]++;
+            theOccupantCount[FOX]++;
          }
          else if (theOccupant instanceof Hound)
          {
-            theOccupantCount[1]++;
+            theOccupantCount[HOUND]++;
          }
          else
          {
-            theOccupantCount[2]++;
+            theOccupantCount[EMPTY]++;
          }
       }
 
@@ -135,11 +168,11 @@ public abstract class FieldOccupant
     * @param y the y coordinates
     * @return the number of hounds
     */
-   protected int numNeighboringHounds(int x, int y)
+   protected int numNeighboringHounds()
    {
       int houndCount = 0;
 
-      for (FieldOccupant occupant : Simulation._theField.getNeighborCells(x, y))
+      for (FieldOccupant occupant : getNeighbors())
       {
          if (occupant instanceof Hound)
          {
@@ -150,9 +183,13 @@ public abstract class FieldOccupant
    }
 
 
-   protected int randomToMax(int max)
+   /**
+    * @param max the max range exclusive
+    * @return a random number between 0 and max exclusive
+    */
+   protected int randomNumUptoMax(int max)
    {
-      return (int)(Math.random() * (max + 1));
+      return (int)(Math.random() * (max));
    }
 
 

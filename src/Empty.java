@@ -29,6 +29,6 @@ public class Empty extends FieldOccupant
     */
    @Override public String toString()
    {
-      return " ";
+      return "E";
    }
 }

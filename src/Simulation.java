@@ -2,6 +2,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * The Simulation class is a program that runs and animates a simulation of
@@ -12,8 +13,10 @@ public class Simulation
 {
    // Start the countdown latch
    public static CountDownLatch _simulationStarted;
-   public static Field    _theField          = null;
+   public static Field _theField = null;
 
+   // Redraw field flag, can be accessed and set in other classes.
+   public static AtomicBoolean _redrawField = new AtomicBoolean(true);
 
    // The constant CELL_SIZE determines the size of each cell on the 
    // screen during animation.  (You may change this if you wish.)
@@ -177,7 +180,7 @@ public class Simulation
          windowFrame.setSize(_theField.getWidth() * CELL_SIZE + 10,
                _theField.getHeight() * CELL_SIZE + 30);
          windowFrame.setVisible(true);
-        // ((JFrame) windowFrame).setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+         // ((JFrame) windowFrame).setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
          // Create a "Canvas" we can draw upon; attach it to the window.
          drawingCanvas = new Canvas();
@@ -211,8 +214,6 @@ public class Simulation
       Random randomGenerator = new Random();
       FieldOccupant newOccupant = null;
 
-
-
       // Visit each cell; randomly placing a Fox, Hound, or nothing in each.
       for (int i = 0; i < theField.getWidth(); i++)
       {
@@ -231,7 +232,7 @@ public class Simulation
             // of adding a fox, then place a fox
             else if (randomGenerator.nextGaussian() <= probabilityFox)
             {
-              // System.out.println("Fox");
+               // System.out.println("Fox");
 
                newOccupant = new Fox(i, j, false);
                new Thread((Fox) newOccupant).start();
@@ -266,9 +267,8 @@ public class Simulation
       while (true)
       {
          // Check if the redraw boolean is set and set it to false
-         if (Field._redrawField.getAndSet(false))
+         if (_redrawField.getAndSet(false))
          {
-            System.out.println("PRINT");
             // Wait 30 milliseconds for the field to draw
             Thread.sleep(30);
 

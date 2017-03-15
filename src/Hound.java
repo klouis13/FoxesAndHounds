@@ -91,7 +91,7 @@ public class Hound extends FieldOccupant implements Runnable
                if (neighbors[i] instanceof Fox)
                {
                   // Try to acquire the lock for the neighbor
-                  neighborLock = neighbors[i].getAndLock();
+                  neighborLock = neighbors[i].lockAndGet();
 
                   // Check if the lock was acquired
                   if (neighborLock != null)
@@ -107,7 +107,7 @@ public class Hound extends FieldOccupant implements Runnable
                         {
 
                            // Try to get the lock
-                           otherNeighborLock = otherNeighbors[j].getAndLock();
+                           otherNeighborLock = otherNeighbors[j].lockAndGet();
 
                            // Check if the lock was acquired
                            if (otherNeighborLock != null)
@@ -166,7 +166,7 @@ public class Hound extends FieldOccupant implements Runnable
                        j < otherNeighbors.length && !completedAction; j++)
                   {
                      // Try to get the lock
-                     otherNeighborLock = otherNeighbors[j].getAndLock();
+                     otherNeighborLock = otherNeighbors[j].lockAndGet();
 
                      // Check if the lock was acquired
                      if (otherNeighborLock != null)
@@ -208,7 +208,7 @@ public class Hound extends FieldOccupant implements Runnable
          {
 
          }
+
       }
    }
-}
 

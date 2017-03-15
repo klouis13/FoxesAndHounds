@@ -18,9 +18,6 @@ public class Field
    // indices
    private final static boolean WIDTH_INDEX = true;
 
-   // Redraw field flag, can be set in other classes.
-   public static AtomicBoolean _redrawField;
-
 
    /**
     * Creates an empty field of given width and height
@@ -30,7 +27,6 @@ public class Field
     */
    public Field(int width, int height)
    {
-      _redrawField = new AtomicBoolean(true);
       _occupants = new FieldOccupant[width][height];
 
    } // Field
@@ -97,12 +93,8 @@ public class Field
       // indexes to check the neighboring cells
       for (int[] offset : indexOffsets)
       {
-         // If there's something at that location, add it to our
-         // neighbor set
-         if (getOccupantAt(x + offset[0], y + offset[1]) != null)
-         {
-            neighbors.add(getOccupantAt(x + offset[0], y + offset[1]));
-         }
+         // Add the occupent to the set
+         neighbors.add(getOccupantAt(x + offset[0], y + offset[1]));
       }
 
       return neighbors;
