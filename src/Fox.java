@@ -1,4 +1,4 @@
-import java.awt.Color;
+import java.awt.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -9,8 +9,9 @@ public class Fox extends FieldOccupant implements Runnable
 
    /**
     * Create a fox at x and y with the lock initialized to the boolean
-    * @param x the x coordinate
-    * @param y the y coordinate
+    *
+    * @param x        the x coordinate
+    * @param y        the y coordinate
     * @param initLock the initial boolean condition
     */
    public Fox(int x, int y, boolean initLock)
@@ -24,7 +25,7 @@ public class Fox extends FieldOccupant implements Runnable
     */
    @Override public Color getDisplayColor()
    {
-      return Color.green;
+      return Color.darkGray;
    } // getDisplayColor
 
 

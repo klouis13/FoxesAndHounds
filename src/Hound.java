@@ -31,7 +31,7 @@ public class Hound extends FieldOccupant implements Runnable
     */
    @Override public Color getDisplayColor()
    {
-      return Color.red;
+      return Color.magenta;
    } // getDisplayColor
 
 
@@ -61,7 +61,7 @@ public class Hound extends FieldOccupant implements Runnable
       // Declare Variables
       int specificNeighborCount;
       int foxCount;
-      boolean hadSex;
+      boolean mated;
 
       AtomicBoolean myLock;
       AtomicBoolean houndLock;
@@ -93,6 +93,8 @@ public class Hound extends FieldOccupant implements Runnable
       {
          try
          {
+            // Every time the Hound sleeps the hunger level decreases
+            // proportional to the amount of time asleep
             _hungerLevel -= threadSleep();
          }
          catch (InterruptedException e)
@@ -184,7 +186,7 @@ public class Hound extends FieldOccupant implements Runnable
                      if (chosenNeighbor instanceof Fox)
                      {
                         // Reset the
-                        hadSex = false;
+                        mated = false;
 
                         // Check that there was a hound nearby
                         if (specificNeighborCount > 0)
@@ -205,12 +207,14 @@ public class Hound extends FieldOccupant implements Runnable
                                  createNewFieldOccupant(chosenNeighbor.getX(),
                                        chosenNeighbor.getY(), HOUND);
 
-                                 hadSex = true;
+                                 mated = true;
                               }
                               houndLock.getAndSet(false);
                            }
                         }
-                        if (!hadSex)
+                        // If the Hound did not mate then the fox should be
+                        // replaced by an empty cell
+                        if (!mated)
                         {
                            // Create a new empty cell where the fox was
                            createNewFieldOccupant(chosenNeighbor.getX(),
@@ -238,8 +242,12 @@ public class Hound extends FieldOccupant implements Runnable
                   // Choose a random hound
                   chosenHound = randomOccupant(specificNeighborCount,
                         specificNeighbors);
+
+                  // Choose a random fox
                   firstChosenFox = randomOccupant(foxCount, foundFoxes);
 
+                  // Decrement the fox counter, remove the first fox that was
+                  // chosen from the array and choose another random fox
                   secondChosenFox = randomOccupant(--foxCount,
                         removeFromArray(firstChosenFox, foundFoxes));
 
@@ -354,6 +362,8 @@ public class Hound extends FieldOccupant implements Runnable
       // Iterate through the array and remove the occupant to remove
       for (FieldOccupant currentOccupant : occupants)
       {
+         // If the current occupant is not the one to remove then add it to the
+         // array
          if (currentOccupant != occupantToRemove)
          {
             occupants[i] = currentOccupant;
