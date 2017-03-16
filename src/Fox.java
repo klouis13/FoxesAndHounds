@@ -25,7 +25,7 @@ public class Fox extends FieldOccupant implements Runnable
     */
    @Override public Color getDisplayColor()
    {
-      return Color.darkGray;
+      return Color.cyan;
    } // getDisplayColor
 
 

@@ -23,7 +23,7 @@ public class Empty extends FieldOccupant
     */
    @Override public Color getDisplayColor()
    {
-      return Color.white;
+      return Color.black;
    } // getDisplayColor
 
 

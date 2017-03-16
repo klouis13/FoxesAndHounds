@@ -31,7 +31,7 @@ public class Hound extends FieldOccupant implements Runnable
     */
    @Override public Color getDisplayColor()
    {
-      return Color.magenta;
+      return Color.orange;
    } // getDisplayColor
 
 
