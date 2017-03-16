@@ -1,7 +1,7 @@
 import java.awt.*;
 
 /**
- * Represents a Empty (empty) cell in the field
+ * Represents a Empty cell in the field
  */
 public class Empty extends FieldOccupant
 {

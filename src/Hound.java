@@ -44,42 +44,6 @@ public class Hound extends FieldOccupant implements Runnable
    }
 
 
-   /*
-    * Reset the Hounds hunger
-    */
-   private void fed()
-   {
-      _hungerLevel = _houndStarveTime;
-   }
-
-
-   /*
-    * Remove an itme from an array and return that same array
-    *
-    * @param occupantToRemove the occupant to remove
-    * @param occupants the array of occupant to remove it from
-    * @return The array without the occupantToRemove
-    */
-   private FieldOccupant[] removeFromArray(FieldOccupant occupantToRemove,
-         FieldOccupant[] occupants)
-   {
-      // Initialize the counter to keep track of the location in the array
-      int i = 0;
-
-      // Iterate through the array and remove the occupant to remove
-      for (FieldOccupant currentOccupant : occupants)
-      {
-         if (currentOccupant != occupantToRemove)
-         {
-            occupants[i] = currentOccupant;
-            i++;
-         }
-      }
-
-      return occupants;
-   }
-
-
    /**
     * Sets the starve time for this class
     *
@@ -363,5 +327,42 @@ public class Hound extends FieldOccupant implements Runnable
       // The hound died put a new Empty Cell in the Hounds place
       createNewFieldOccupant(getX(), getY(), EMPTY);
    }
+
+
+   /*
+    * Reset the Hounds hunger
+    */
+   private void fed()
+   {
+      _hungerLevel = _houndStarveTime;
+   }
+
+
+   /*
+    * Remove an itme from an array and return that same array
+    *
+    * @param occupantToRemove the occupant to remove
+    * @param occupants the array of occupant to remove it from
+    * @return The array without the occupantToRemove
+    */
+   private FieldOccupant[] removeFromArray(FieldOccupant occupantToRemove,
+         FieldOccupant[] occupants)
+   {
+      // Initialize the counter to keep track of the location in the array
+      int i = 0;
+
+      // Iterate through the array and remove the occupant to remove
+      for (FieldOccupant currentOccupant : occupants)
+      {
+         if (currentOccupant != occupantToRemove)
+         {
+            occupants[i] = currentOccupant;
+            i++;
+         }
+      }
+
+      return occupants;
+   }
+
 }
 

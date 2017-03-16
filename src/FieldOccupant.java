@@ -4,14 +4,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Abstract parent class for objects that can occupy a cell in the Field
+ * Stores the location of the occupant and the lock for the occupant to allow
+ * concurrency.
  */
 public abstract class FieldOccupant
 {
    // Declare Instance variables
-   private          AtomicBoolean _lock;
-   private          int           _xCoordiante;
-   private          int           _yCoordinate;
-   protected static Field         _occupantField;
+   private        AtomicBoolean _lock;
+   private        int           _xCoordiante;
+   private        int           _yCoordinate;
+   private static Field         _occupantField;
 
    // Initialize Constants
    protected final int NUM_NEIGHBORS = 8;
@@ -45,6 +47,13 @@ public abstract class FieldOccupant
    {
       _occupantField = theField;
    }
+
+
+   /**
+    * @return the color to use for a cell containing a particular kind
+    * of occupant
+    */
+   abstract public Color getDisplayColor();
 
 
    /*
@@ -194,12 +203,4 @@ public abstract class FieldOccupant
    {
       return theOccupants[(int) (Math.random() * (max))];
    }
-
-
-   /**
-    * @return the color to use for a cell containing a particular kind
-    * of occupant
-    */
-   abstract public Color getDisplayColor();
-
 }
