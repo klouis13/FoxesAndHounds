@@ -76,6 +76,7 @@ public class Hound extends FieldOccupant implements Runnable
       // Declare Variables
       int specificNeighborCount;
       int foxCount;
+      boolean hadSex;
 
       AtomicBoolean myLock;
       AtomicBoolean houndLock;
@@ -184,8 +185,8 @@ public class Hound extends FieldOccupant implements Runnable
                   {
                      if (chosenNeighbor instanceof Fox)
                      {
-                        // Reset the newHound object
-                        newHound = null;
+                        // Reset the hadSex
+                        hadSex = false;
 
                         // Check that there was a hound nearby
                         if (specificNeighborCount > 0)
@@ -197,6 +198,7 @@ public class Hound extends FieldOccupant implements Runnable
                            // Lock the hound
                            houndLock = chosenHound.lockAndGet();
 
+
                            // Make sure the chosenHound is still there
                            if (houndLock != null)
                            {
@@ -205,11 +207,13 @@ public class Hound extends FieldOccupant implements Runnable
                                  // Create a new Hound
                                  createNewFieldOccupant(chosenNeighbor.getX(),
                                        chosenNeighbor.getY(), HOUND);
+
+                                 hadSex = true;
                               }
                               houndLock.getAndSet(false);
                            }
                         }
-                        if (newHound == null)
+                        if (!hadSex)
                         {
                            // Create a new empty cell where the fox was
                            createNewFieldOccupant(chosenNeighbor.getX(),

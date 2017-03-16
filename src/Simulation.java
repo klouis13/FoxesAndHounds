@@ -94,11 +94,11 @@ public class Simulation
       /**
        *  Default parameters.  (You may change these if you wish.)
        */
-      int width = 100;                              // Default width
-      int height = 100;                             // Default height
+      int width = 50;                              // Default width
+      int height = 50;                             // Default height
       int starveTime = Hound.DEFAULT_STARVE_TIME;  // Default starvation time
-      double probabilityFox = .75;                 // Default probability of fox
-      double probabilityHound = .15;              // Default probability of hound
+      double probabilityFox = .15;                 // Default probability of fox
+      double probabilityHound = .1;              // Default probability of hound
       boolean graphicsMode = true;
 
       // If we attach a GUI to this program, these objects will hold
@@ -192,7 +192,7 @@ public class Simulation
       } // if
 
       // Start the simulation
-      _simulationStarted.countDown();
+     // _simulationStarted.countDown();
 
       redrawField(_theField, graphicsContext);
    } // main
@@ -227,7 +227,7 @@ public class Simulation
             }
             // If a random number is less than or equal to the probability
             // of adding a fox, then place a fox
-            else if (randomGenerator.nextGaussian() <= probabilityFox)
+            else if (randomGenerator.nextFloat() <= probabilityFox)
             {
                newOccupant = new Fox(i, j, false);
                new Thread((Fox) newOccupant).start();
