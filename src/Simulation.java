@@ -7,30 +7,21 @@ import java.util.concurrent.CountDownLatch;
  * The Simulation class is a program that runs and animates a simulation of
  * Foxes and Hounds.
  */
-
 public class Simulation
 {
-   // Start the countdown latch
-   public static CountDownLatch _simulationStarted;
-   public static Field _theField = null;
-
-
+   // Create the count down latch for the foxes and hounds to wait on
+   public static final CountDownLatch SIMULATION_START = new CountDownLatch(
+         1);
 
    // The constant CELL_SIZE determines the size of each cell on the 
    // screen during animation.  (You may change this if you wish.)
    private static final int    CELL_SIZE     = 20;
-   private static final String USAGE_MESSAGE = "Usage: java Simulation [--graphics] [--width int] [--height int] [--starvetime int] [--fox float] [--hound float]";
+   private static final String USAGE_MESSAGE = "Usage: java Simulation "
+         + "[--graphics] [--width int] [--height int] [--starvetime int] "
+         + "[--fox float] [--hound float]";
 
 
-
-
-   private static void startSimulation()
-   {
-
-   }
-
-
-   /**
+   /*
     * Draws the current state of the field
     *
     * @param graphicsContext is an optional GUI window to draw to
@@ -94,12 +85,13 @@ public class Simulation
       /**
        *  Default parameters.  (You may change these if you wish.)
        */
-      int width = 50;                              // Default width
-      int height = 50;                             // Default height
+      int width = 25;                              // Default width
+      int height = 25;                             // Default height
       int starveTime = Hound.DEFAULT_STARVE_TIME;  // Default starvation time
-      double probabilityFox = .15;                 // Default probability of fox
+      double probabilityFox = .5;                 // Default probability of fox
       double probabilityHound = .1;              // Default probability of hound
-      boolean graphicsMode = true;
+      boolean graphicsMode = false;
+      Field theField;
 
       // If we attach a GUI to this program, these objects will hold
       // references to the GUI elements
@@ -161,40 +153,43 @@ public class Simulation
       } // for
 
       // Create the initial Field.
-      _theField = new Field(width, height);
+      theField = new Field(width, height);
+
+      // Set the Field for the fieldOccupants
+      FieldOccupant.setOccupantField(theField);
 
       // Set the starve time for hounds
       Hound.setStarveTime(starveTime);
 
-      // Create the count down latch for the foxes and hounds to wait on
-      _simulationStarted = new CountDownLatch(1);
-
       // Initialize the starting field with elements
-      _theField = setStartingField(_theField, probabilityFox, probabilityHound);
+      theField = setStartingField(theField, probabilityFox, probabilityHound);
 
       // Check if graphics mode was set and if so create the frame, canvas,
       // and window. If not in graphics mode, these will remain null
       if (graphicsMode)
       {
-         windowFrame = new Frame("Foxes and Hounds");
-         windowFrame.setSize(_theField.getWidth() * CELL_SIZE + 10,
-               _theField.getHeight() * CELL_SIZE + 30);
+         windowFrame = new JFrame("Foxes and Hounds");
+         windowFrame.setSize(theField.getWidth() * CELL_SIZE + 10,
+               theField.getHeight() * CELL_SIZE + 30);
          windowFrame.setVisible(true);
-         //((JFrame) windowFrame).setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+         ((JFrame) windowFrame).setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
          // Create a "Canvas" we can draw upon; attach it to the window.
          drawingCanvas = new Canvas();
          drawingCanvas.setBackground(Color.white);
-         drawingCanvas.setSize(_theField.getWidth() * CELL_SIZE,
-               _theField.getHeight() * CELL_SIZE);
+         drawingCanvas.setSize(theField.getWidth() * CELL_SIZE,
+               theField.getHeight() * CELL_SIZE);
          windowFrame.add(drawingCanvas);
          graphicsContext = drawingCanvas.getGraphics();
       } // if
 
-      // Start the simulation
-     // _simulationStarted.countDown();
+      drawField(graphicsContext, theField);
+      drawField(graphicsContext, theField);
 
-      redrawField(_theField, graphicsContext);
+      // Start the simulation
+      SIMULATION_START.countDown();
+
+      redrawField(theField, graphicsContext);
    } // main
 
 
@@ -202,7 +197,7 @@ public class Simulation
     * Add elements to the field to start. Each element is a new thread and is
     * started. The thread will wait for the field to be drawn to start computing
     *
-    * @param _theField         The field to add elements to
+    * @param theField         The field to add elements to
     * @param probabilityFox   The probability that a fox will be created
     * @param probabilityHound The probability that a hound will be created
     */
@@ -211,7 +206,7 @@ public class Simulation
    {
       // Initialize variables
       Random randomGenerator = new Random();
-      FieldOccupant newOccupant = null;
+      FieldOccupant newOccupant;
 
       // Visit each cell; randomly placing a Fox, Hound, or nothing in each.
       for (int i = 0; i < theField.getWidth(); i++)
@@ -227,7 +222,7 @@ public class Simulation
             }
             // If a random number is less than or equal to the probability
             // of adding a fox, then place a fox
-            else if (randomGenerator.nextFloat() <= probabilityFox)
+            else if (randomGenerator.nextGaussian() <= probabilityFox)
             {
                newOccupant = new Fox(i, j, false);
                new Thread((Fox) newOccupant).start();
@@ -235,8 +230,6 @@ public class Simulation
             else
             // The spot has neither a fox or a hound, so put an empty spot there
             {
-               //System.out.println("Empty");
-
                newOccupant = new Empty(i, j, false);
             }
 
@@ -252,8 +245,9 @@ public class Simulation
    /*
     * Loop continuously redrawing the field each time the AtomicBoolean is set
     *
-    * @param _theField        the field to redraw
-    * @param graphicsContext the context for the graphics content if in graphic mode
+    * @param theField        the field to redraw
+    * @param graphicsContext the context for the graphics content if in graphic
+    * mode
     */
    private static void redrawField(Field theField, Graphics graphicsContext)
          throws InterruptedException
@@ -265,7 +259,7 @@ public class Simulation
          if (Field.getRedrawField().getAndSet(false))
          {
             // Wait 30 milliseconds for the field to draw
-            Thread.sleep(30);
+            Thread.sleep(15);
 
             // Draw the field
             drawField(graphicsContext, theField);

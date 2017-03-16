@@ -8,18 +8,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class Field
 {
-   /**
-    * Define any variables associated with a Field object here.  These
-    * variables MUST be private.
-    */
+   // Dclare instance variables
    private FieldOccupant[][] _occupants;
 
    // Used in index normalizing method to distinguish between x and y
    // indices
    private final static boolean WIDTH_INDEX = true;
 
-   // Redraw field flag, can be accessed and set in other classes.
+   // Redraw field flag to signal when a the field needs to be redrawn
    private static AtomicBoolean _redrawField;
+
 
    /**
     * Creates an empty field of given width and height
@@ -35,16 +33,22 @@ public class Field
    } // Field
 
 
+   /**
+    * Set the redraw field boolean
+    */
    public static void setRedrawField()
    {
       _redrawField.getAndSet(true);
    }
 
+
+   /**
+    * @return the redraw boolean
+    */
    public static AtomicBoolean getRedrawField()
    {
       return _redrawField;
    }
-
 
 
    /**
@@ -116,9 +120,9 @@ public class Field
    } // getNeighborsOf
 
 
-   /**
-    * Normalize an index (positive or negative) by translating it to a legal reference within
-    * the bounds of the field
+   /*
+    * Normalize an index (positive or negative) by translating it to a legal
+    * reference within the bounds of the field
     *
     * @param index        to normalize
     * @param isWidthIndex is true when normalizing a width reference, false if

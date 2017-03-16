@@ -7,15 +7,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class Fox extends FieldOccupant implements Runnable
 {
 
+   /**
+    * Create a fox at x and y with the lock initialized to the boolean
+    * @param x the x coordinate
+    * @param y the y coordinate
+    * @param initLock the initial boolean condition
+    */
    public Fox(int x, int y, boolean initLock)
    {
       super(x, y, initLock);
-   }
-
-
-   public Fox(int x, int y, AtomicBoolean theLock)
-   {
-      super(x, y, theLock);
    }
 
 
@@ -36,10 +36,6 @@ public class Fox extends FieldOccupant implements Runnable
       return "F";
    }
 
-   // Ask if I'm interrupted right after looking at neighbors
-   // Then lock yourself
-   // Use a countdown latch
-
 
    public void run()
    {
@@ -52,7 +48,8 @@ public class Fox extends FieldOccupant implements Runnable
       FieldOccupant chosenNeighbor;
       FieldOccupant chosenFox;
 
-      // Create an array to hold FieldOccupants that will need to be accessed later
+      // Create an array to hold FieldOccupants that will need to be accessed
+      // later
       FieldOccupant[] specificNeighbors = new FieldOccupant[NUM_NEIGHBORS];
 
       // Initialize Constants
@@ -61,7 +58,7 @@ public class Fox extends FieldOccupant implements Runnable
       // Wait for the simulation to start
       try
       {
-         Simulation._simulationStarted.await();
+         Simulation.SIMULATION_START.await();
       }
       catch (InterruptedException e)
       {
@@ -71,6 +68,16 @@ public class Fox extends FieldOccupant implements Runnable
       // Run while the fox has not been eaten
       while (!isThreadInterrupted())
       {
+         // The fox is done doing things so it sleeps
+         try
+         {
+            threadSleep();
+         }
+         catch (InterruptedException e)
+         {
+
+         }
+
          // Reset the counter for the FieldOccupants that need to be stored
          specificNeighborCount = 0;
 
@@ -80,7 +87,8 @@ public class Fox extends FieldOccupant implements Runnable
             // Check if the neighbor is an Empty Object
             if (currentOccupant instanceof Empty)
             {
-               // Store the Empty objects in an array to randomly choose one later
+               // Store the Empty objects in an array to randomly choose one
+               // later
                specificNeighbors[specificNeighborCount] = currentOccupant;
 
                // increment the number of empty cells that you have
@@ -101,7 +109,8 @@ public class Fox extends FieldOccupant implements Runnable
                specificNeighborCount = 0;
                houndCount = 0;
 
-               // Iterate over the neighbors of the empty cell looking for foxes and hounds
+               // Iterate over the neighbors of the empty cell looking for foxes
+               // and hounds
                for (FieldOccupant currentOccupant : chosenNeighbor
                      .getNeighbors())
                {
@@ -121,7 +130,8 @@ public class Fox extends FieldOccupant implements Runnable
                      houndCount++;
                   }
                }
-               // If the number of hounds is less than 2 and there was at least 1 other fox
+               // If the number of hounds is less than 2 and there was at least
+               // 1 other fox
                if (houndCount < MAX_NEIGHBORING_HOUNDS
                      && specificNeighborCount > 0)
                {
@@ -131,22 +141,23 @@ public class Fox extends FieldOccupant implements Runnable
 
                   // Try to Lock yourself then check
                   myLock = lockAndGet();
-                  if (myLock != null)
+
+                  // Check that you have acquired the lock and not dead
+                  if (myLock != null && !isThreadInterrupted())
                   {
                      // Try to Lock the empty cell and then check
                      neighborLock = chosenNeighbor.lockAndGet();
                      if (neighborLock != null)
                      {
+                        // Make sure that the neighbor is still empty
                         if (chosenNeighbor instanceof Empty)
                         {
                            // Try to lock the other fox then check
                            secondFoxLock = chosenFox.lockAndGet();
                            if (secondFoxLock != null)
                            {
-                              // Make sure you haven't been interrupted
-                              if (chosenFox instanceof Fox
-                                    && !isThreadInterrupted())
-                                 {
+                              if (chosenFox instanceof Fox)
+                              {
                                  // Create a new Fox
                                  createNewFieldOccupant(chosenNeighbor.getX(),
                                        chosenNeighbor.getY(), FOX);
@@ -163,15 +174,6 @@ public class Fox extends FieldOccupant implements Runnable
                   }
                }
             }
-         }
-         // The fox is done doing things so it sleeps
-         try
-         {
-            threadSleep();
-         }
-         catch (InterruptedException e)
-         {
-
          }
       }
    }
